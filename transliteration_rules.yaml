@@ -1,0 +1,11 @@
+# Letter typed on a Russian keyboard -> Kazakh letters it can stand for.
+# The first entry is always the letter itself (tag 0).
+# Order matters: the list index is the model's output tag.
+к: [к, қ]
+г: [г, ғ]
+н: [н, ң]
+о: [о, ө]
+у: [у, ұ, ү]
+а: [а, ә]
+и: [и, і]
+х: [х, һ]

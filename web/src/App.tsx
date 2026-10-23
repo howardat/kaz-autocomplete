@@ -1,0 +1,273 @@
+import { useDeferredValue, useEffect, useMemo, useState } from "react"
+import { ArrowRight, Check, Copy, Cpu, Download, Gauge, Keyboard, Laptop, Loader2, Monitor, Moon, ShieldCheck, Sun } from "lucide-react"
+
+import { TypePad } from "@/components/type-pad"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Textarea } from "@/components/ui/textarea"
+import { convertText, loadEngine, type Engine } from "@/lib/engine"
+
+const LETTERS: [string, string[]][] = [
+  ["к", ["к", "қ"]], ["г", ["г", "ғ"]], ["н", ["н", "ң"]], ["о", ["о", "ө"]],
+  ["у", ["у", "ұ", "ү"]], ["а", ["а", "ә"]], ["и", ["и", "і"]], ["х", ["х", "һ"]],
+]
+
+const STATS = [
+  { value: "99.0%", label: "top-1 accuracy", detail: "on held-out words with ambiguous letters", icon: Gauge },
+  { value: "99.9%", label: "in the top 3", detail: "the right word is almost always one key away", icon: Check },
+  { value: "<10 ms", label: "per word", detail: "a 2-layer BiLSTM, int8, on your CPU", icon: Cpu },
+  { value: "2.6 MB", label: "model", detail: "nothing leaves your machine", icon: ShieldCheck },
+]
+
+function useTheme() {
+  const [dark, setDark] = useState(() => {
+    try {
+      const saved = localStorage.getItem("theme")
+      if (saved) return saved === "dark"
+    } catch { /* storage blocked */ }
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+  })
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark)
+    try { localStorage.setItem("theme", dark ? "dark" : "light") } catch { /* storage blocked */ }
+  }, [dark])
+  return [dark, () => setDark((d) => !d)] as const
+}
+
+function Logo({ className = "size-7" }: { className?: string }) {
+  return (
+    <span className={`${className} inline-grid place-items-center rounded-lg bg-primary font-semibold text-primary-foreground`}>
+      Қ
+    </span>
+  )
+}
+
+function CopyButton({ text }: { text: string }) {
+  const [done, setDone] = useState(false)
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      disabled={!text}
+      onClick={async () => {
+        await navigator.clipboard.writeText(text)
+        setDone(true)
+        setTimeout(() => setDone(false), 1500)
+      }}
+    >
+      {done ? <Check /> : <Copy />} {done ? "Copied" : "Copy"}
+    </Button>
+  )
+}
+
+function ConvertPad({ engine }: { engine: Engine }) {
+  const [text, setText] = useState("Казакстан Республикасы - тауелсиз мемлекет. Бугин ауа райы оте жаксы.")
+  const deferred = useDeferredValue(text)
+  const out = useMemo(() => convertText(engine, deferred), [engine, deferred])
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-medium text-muted-foreground">Russian keyboard text</span>
+        <Textarea value={text} onChange={(e) => setText(e.target.value)} className="min-h-52 resize-none text-lg" placeholder="Paste text typed without Kazakh letters…" />
+      </div>
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-muted-foreground">Kazakh</span>
+          <CopyButton text={out} />
+        </div>
+        <div className="min-h-52 rounded-md border bg-muted/40 px-3 py-2 text-lg break-words whitespace-pre-wrap">{out}</div>
+      </div>
+    </div>
+  )
+}
+
+function Step({ n, children }: { n: number; children: React.ReactNode }) {
+  return (
+    <li className="flex gap-3">
+      <span className="grid size-6 shrink-0 place-items-center rounded-full border bg-background font-mono text-xs">{n}</span>
+      <span className="pt-0.5 text-sm text-muted-foreground">{children}</span>
+    </li>
+  )
+}
+
+function Code({ children }: { children: string }) {
+  return (
+    <div className="group relative">
+      <pre className="overflow-x-auto rounded-lg border bg-muted/50 p-3 font-mono text-xs leading-relaxed">{children}</pre>
+    </div>
+  )
+}
+
+export default function App() {
+  const [dark, toggleTheme] = useTheme()
+  const [engine, setEngine] = useState<Engine | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    loadEngine().then(setEngine, (e: Error) => setError(e.message))
+  }, [])
+
+  return (
+    <div className="relative min-h-svh overflow-x-clip bg-background text-foreground">
+      {/* Backdrop: fine grid fading out, plus a soft glow behind the hero. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-0 [background-image:linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_70%_50%_at_50%_0%,black,transparent)] opacity-60" />
+      <div aria-hidden className="pointer-events-none absolute top-[-12rem] left-1/2 -z-0 h-[32rem] w-[60rem] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,oklch(0.7_0.12_250/0.18),transparent)] blur-2xl" />
+
+      <header className="sticky top-0 z-20 border-b border-transparent bg-background/70 backdrop-blur-lg supports-[backdrop-filter]:bg-background/50">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+          <a href="#" className="flex items-center gap-2 font-semibold tracking-tight">
+            <Logo /> KazType
+          </a>
+          <nav className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex"><a href="#demo">Demo</a></Button>
+            <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex"><a href="#how">How it works</a></Button>
+            <Button variant="ghost" size="sm" asChild><a href="#download">Download</a></Button>
+            <Button variant="ghost" size="icon" aria-label="Toggle theme" onClick={toggleTheme}>
+              {dark ? <Sun /> : <Moon />}
+            </Button>
+          </nav>
+        </div>
+      </header>
+
+      <main className="relative z-10">
+        <section className="mx-auto flex max-w-4xl flex-col items-center px-4 pt-20 pb-12 text-center sm:pt-28">
+          <Badge variant="outline" className="mb-6 gap-1.5 rounded-full bg-background/60 px-3 py-1 backdrop-blur">
+            <span className="size-1.5 rounded-full bg-emerald-500" /> On-device neural input method · macOS & Windows
+          </Badge>
+          <h1 className="text-4xl font-semibold tracking-tighter text-balance sm:text-6xl">
+            Type Kazakh on a{" "}
+            <span className="bg-gradient-to-b from-foreground to-foreground/50 bg-clip-text text-transparent">Russian keyboard.</span>
+          </h1>
+          <p className="mt-5 max-w-2xl text-lg text-pretty text-muted-foreground">
+            Type <span className="font-medium text-foreground">казакстан</span>, get{" "}
+            <span className="font-medium text-foreground">қазақстан</span>. A tiny neural network restores ә ғ қ ң ө ұ ү һ і as
+            you type, right on your machine.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Button size="lg" asChild><a href="#demo">Try it now <ArrowRight /></a></Button>
+            <Button size="lg" variant="outline" asChild><a href="#download"><Download /> Download</a></Button>
+          </div>
+        </section>
+
+        <section id="demo" className="mx-auto max-w-4xl scroll-mt-20 px-4 pb-24">
+          <Card className="overflow-visible border-border/60 bg-card/70 shadow-2xl shadow-black/5 backdrop-blur-xl">
+            <CardContent>
+              {error ? (
+                <p className="py-16 text-center text-sm text-destructive">Could not load the model: {error}</p>
+              ) : !engine ? (
+                <div className="flex items-center justify-center gap-2 py-24 text-sm text-muted-foreground">
+                  <Loader2 className="size-4 animate-spin" /> Loading the model (2.6 MB)…
+                </div>
+              ) : (
+                <Tabs defaultValue="type">
+                  <TabsList className="mb-4">
+                    <TabsTrigger value="type"><Keyboard /> Type live</TabsTrigger>
+                    <TabsTrigger value="convert"><Copy /> Convert text</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="type"><TypePad engine={engine} /></TabsContent>
+                  <TabsContent value="convert"><ConvertPad engine={engine} /></TabsContent>
+                </Tabs>
+              )}
+            </CardContent>
+          </Card>
+        </section>
+
+        <section id="how" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-24">
+          <div className="mx-auto mb-10 max-w-2xl text-center">
+            <h2 className="text-3xl font-semibold tracking-tight">Eight keys, nine missing letters</h2>
+            <p className="mt-3 text-muted-foreground">
+              A Russian layout has no key for nine Kazakh letters. KazType reads each typed letter in context and picks the
+              Kazakh one you meant.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {LETTERS.map(([from, to]) => (
+              <div key={from} className="group flex items-center justify-between rounded-xl border bg-card/60 p-4 backdrop-blur transition-colors hover:bg-accent/50">
+                <span className="grid size-10 place-items-center rounded-lg border bg-background font-mono text-lg">{from}</span>
+                <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                <span className="flex gap-1.5 text-xl font-medium">
+                  {to.map((t, i) => <span key={t} className={i === 0 ? "text-muted-foreground" : ""}>{t}</span>)}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {STATS.map(({ value, label, detail, icon: Icon }) => (
+              <Card key={label} className="gap-2 bg-card/60 backdrop-blur">
+                <CardHeader>
+                  <Icon className="mb-2 size-4 text-muted-foreground" />
+                  <CardTitle className="text-3xl font-semibold tracking-tight tabular-nums">{value}</CardTitle>
+                  <CardDescription className="font-medium text-foreground">{label}</CardDescription>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">{detail}</CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        <section id="download" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-24">
+          <div className="mx-auto mb-10 max-w-2xl text-center">
+            <h2 className="text-3xl font-semibold tracking-tight">Get KazType</h2>
+            <p className="mt-3 text-muted-foreground">
+              Works in every app: browsers, Word, Telegram, terminals. Pick a candidate with <span className="font-mono">1–9</span>;
+              your choices are remembered.
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="bg-card/60 backdrop-blur">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Monitor className="size-5" />
+                  <CardTitle className="text-xl">Windows 10 & 11</CardTitle>
+                </div>
+                <CardDescription>A Text Services Framework input method. x64, x86 and ARM64.</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4">
+                <ol className="flex flex-col gap-3">
+                  <Step n={1}>Build with Visual Studio 2022 and CMake:</Step>
+                </ol>
+                <Code>{"cd windows\n.\\build.ps1"}</Code>
+                <ol start={2} className="flex flex-col gap-3">
+                  <Step n={2}>Install from an administrator PowerShell:</Step>
+                </ol>
+                <Code>{"powershell -ExecutionPolicy Bypass -File dist\\install.ps1"}</Code>
+                <ol className="flex flex-col gap-3">
+                  <Step n={3}>Press <span className="font-mono">Win + Space</span> and choose “Kazakh – KazType”.</Step>
+                </ol>
+              </CardContent>
+            </Card>
+            <Card className="bg-card/60 backdrop-blur">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Laptop className="size-5" />
+                  <CardTitle className="text-xl">macOS 13+</CardTitle>
+                </div>
+                <CardDescription>An Input Method Kit app with a Core ML model. Apple silicon and Intel.</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4">
+                <ol className="flex flex-col gap-3">
+                  <Step n={1}>Build and install (needs only Xcode Command Line Tools):</Step>
+                </ol>
+                <Code>{"cd macos\nmake install"}</Code>
+                <ol start={2} className="flex flex-col gap-3">
+                  <Step n={2}>Choose “Қазақша (KazType)” in the input menu. If it is missing, log out and back in.</Step>
+                </ol>
+              </CardContent>
+            </Card>
+          </div>
+          <p className="mt-4 text-center text-sm text-muted-foreground">Prebuilt installers are coming soon.</p>
+        </section>
+      </main>
+
+      <Separator />
+      <footer className="relative z-10 mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-8 text-sm text-muted-foreground sm:flex-row">
+        <span className="flex items-center gap-2"><Logo className="size-5 text-xs" /> KazType</span>
+        <span>The demo runs entirely in your browser. Nothing you type is sent anywhere.</span>
+      </footer>
+    </div>
+  )
+}

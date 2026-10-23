@@ -1,0 +1,13 @@
+[project]
+name = "kaz-autocomplete"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "coremltools>=9.0",
+    "datasets>=5.0.1",
+    "numpy>=2.5.2",
+    "pyyaml>=6.0.3",
+    "torch>=2.14.1",
+]

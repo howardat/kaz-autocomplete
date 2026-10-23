@@ -1,0 +1,20 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Model data and artifacts
+data/
+macos/.build/
+macos/build/
+windows/build/
+windows/dist/
+web/node_modules/
+web/dist/
+web/.vercel/

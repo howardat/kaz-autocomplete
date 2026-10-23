@@ -1,0 +1,28 @@
+name: windows
+
+on:
+  push:
+    paths: ['windows/**', '.github/workflows/windows.yml']
+  pull_request:
+    paths: ['windows/**', '.github/workflows/windows.yml']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Inno Setup
+        run: choco install innosetup -y --no-progress
+      - name: Build, test, package
+        shell: pwsh
+        run: windows\build.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KazType-windows
+          path: windows/dist/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KazType-Setup
+          path: windows/dist/KazType-Setup-*.exe
+          if-no-files-found: error
