@@ -34,6 +34,34 @@ char32_t tableLetter(UINT scan) {
     return 0;
 }
 
+/// Number row, \ above Enter, / right of the period, and \ left of Z on ISO keyboards.
+bool isSymbolKey(UINT scan) { return (scan >= 0x02 && scan <= 0x0D) || scan == 0x2B || scan == 0x35 || scan == 0x56; }
+
+/// Russian - PC layout for symbol keys.
+char32_t tableSymbol(UINT scan, bool shift) {
+    static const char32_t row[] = U"1234567890-=";       // 0x02..0x0D
+    static const char32_t shifted[] = U"!\"№;%:?*()_+";
+    if (scan >= 0x02 && scan <= 0x0D) return (shift ? shifted : row)[scan - 0x02];
+    if (scan == 0x35) return shift ? U',' : U'.';
+    return shift ? U'/' : U'\\';
+}
+
+/// ToUnicodeEx on the Russian layout without Ctrl and Alt: 1 with the
+/// character in `out`, -1 or 2+ for a dead key or several characters, 0 for
+/// nothing or no Russian layout installed.
+int toRussian(WPARAM vk, UINT scan, wchar_t& out) {
+    HKL hkl = russianLayout();
+    BYTE state[256];
+    if (!hkl || !GetKeyboardState(state)) return 0;
+    state[VK_CONTROL] = state[VK_LCONTROL] = state[VK_RCONTROL] = 0;
+    state[VK_MENU] = state[VK_LMENU] = state[VK_RMENU] = 0;
+    wchar_t buf[4];
+    // Flag 4: leave the kernel's dead-key state alone.
+    int n = ToUnicodeEx(UINT(vk), scan, state, buf, 4, 4, hkl);
+    if (n == 1) out = buf[0];
+    return n;
+}
+
 }  // namespace
 
 char32_t russianLetter(WPARAM vk, LPARAM lParam) {
@@ -41,24 +69,28 @@ char32_t russianLetter(WPARAM vk, LPARAM lParam) {
     bool extended = (lParam >> 24) & 1;
     if (extended) return 0;
 
-    if (HKL hkl = russianLayout()) {
-        BYTE state[256];
-        if (GetKeyboardState(state)) {
-            state[VK_CONTROL] = state[VK_LCONTROL] = state[VK_RCONTROL] = 0;
-            state[VK_MENU] = state[VK_LMENU] = state[VK_RMENU] = 0;
-            wchar_t buf[4];
-            // Flag 4: leave the kernel's dead-key state alone.
-            int n = ToUnicodeEx(UINT(vk), scan, state, buf, 4, 4, hkl);
-            if (n == 1 && isCyrillicLetter(buf[0])) return buf[0];
-            if (n != 0) return 0;  // some other character
-        }
-    }
+    wchar_t ch = 0;
+    int n = toRussian(vk, scan, ch);
+    if (n == 1 && isCyrillicLetter(ch)) return ch;
+    if (n != 0) return 0;  // some other character
 
     char32_t c = tableLetter(scan);
     if (!c) return 0;
     bool shift = GetKeyState(VK_SHIFT) & 0x8000;
     bool caps = GetKeyState(VK_CAPITAL) & 1;
     return shift != caps ? toUpper(c) : c;
+}
+
+char32_t russianSymbol(WPARAM vk, LPARAM lParam) {
+    UINT scan = (lParam >> 16) & 0xFF;
+    bool extended = (lParam >> 24) & 1;
+    if (extended || !isSymbolKey(scan)) return 0;
+
+    wchar_t ch = 0;
+    int n = toRussian(vk, scan, ch);
+    if (n == 1) return ch;
+    if (n != 0) return 0;
+    return tableSymbol(scan, GetKeyState(VK_SHIFT) & 0x8000);
 }
 
 bool isModifierKey(WPARAM vk) {

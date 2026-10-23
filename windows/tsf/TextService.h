@@ -56,7 +56,7 @@ public:
     STDMETHODIMP GetDisplayAttributeInfo(REFGUID guid, ITfDisplayAttributeInfo** out) override;
 
 private:
-    enum class Action { None, Letter, Backspace, Escape, Commit, Move, Pick, CommitAndPass };
+    enum class Action { None, Letter, Symbol, Backspace, Escape, Commit, Move, Pick, CommitAndPass };
     Action classify(WPARAM vk, LPARAM lp, char32_t& letter, int& arg) const;
 
     HRESULT edit(ITfContext* ctx, DWORD flags, std::function<HRESULT(TfEditCookie)> fn);

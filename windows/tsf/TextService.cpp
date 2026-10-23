@@ -269,7 +269,12 @@ TextService::Action TextService::classify(WPARAM vk, LPARAM lp, char32_t& letter
 
     letter = russianLetter(vk, lp);
     if (letter && sharedConverter().converter) return Action::Letter;
-    if (!composing) return Action::None;
+    // Digits and punctuation: we type them, or the Kazakh layout types letters.
+    char32_t symbol = russianSymbol(vk, lp);
+    if (!composing) {
+        letter = symbol;
+        return symbol ? Action::Symbol : Action::None;
+    }
 
     switch (vk) {
     case VK_BACK: return Action::Backspace;
@@ -285,7 +290,11 @@ TextService::Action TextService::classify(WPARAM vk, LPARAM lp, char32_t& letter
         arg = d - 1;
         return Action::Pick;
     }
-    // Space, punctuation, anything else: commit, then let the app handle the key.
+    if (symbol) {
+        letter = symbol;
+        return Action::Symbol;
+    }
+    // Space, Tab, anything else: commit, then let the app handle the key.
     return Action::CommitAndPass;
 }
 
@@ -314,6 +323,13 @@ STDMETHODIMP TextService::OnKeyDown(ITfContext* ctx, WPARAM vk, LPARAM lp, BOOL*
             }
             typed_.push_back(letter);
             update(ec, ctx);
+            break;
+        case Action::Symbol:
+            if (composition_) commit(ec, ctx);
+            // A one-character composition, ended at once.
+            startComposition(ec, ctx);
+            if (!composition_) return E_FAIL;
+            finish(ec, ctx, std::u32string(1, letter));
             break;
         case Action::Backspace:
             typed_.pop_back();
@@ -345,8 +361,8 @@ STDMETHODIMP TextService::OnKeyDown(ITfContext* ctx, WPARAM vk, LPARAM lp, BOOL*
         }
         return S_OK;
     });
-    // A field we cannot compose in: let the app type the letter itself.
-    if (FAILED(hr) && action == Action::Letter) *eaten = FALSE;
+    // A field we cannot compose in: let the app type the key itself.
+    if (FAILED(hr) && (action == Action::Letter || action == Action::Symbol)) *eaten = FALSE;
     return S_OK;
 }
 
