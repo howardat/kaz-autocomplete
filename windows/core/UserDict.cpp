@@ -15,7 +15,9 @@ void UserDict::reloadIfChanged() {
     if (path_.empty()) return;
     std::error_code ec;
     auto mtime = fs::last_write_time(path_, ec);
-    if (ec || mtime == loaded_) return;
+    if (ec) return;
+    auto size = fs::file_size(path_, ec);
+    if (ec || (mtime == loaded_ && size == loadedSize_)) return;
     std::ifstream f(path_, std::ios::binary);
     if (!f) return;
     entries_.clear();
@@ -27,6 +29,7 @@ void UserDict::reloadIfChanged() {
         entries_[fromUtf8(line.substr(0, tab))] = fromUtf8(line.substr(tab + 1));
     }
     loaded_ = mtime;
+    loadedSize_ = size;
 }
 
 std::optional<std::u32string> UserDict::lookup(const std::u32string& key) {
@@ -62,7 +65,9 @@ void UserDict::save() {
         if (!f) return;
     }
     fs::rename(tmp, path_, ec);  // replaces atomically on NTFS and POSIX
-    if (!ec) loaded_ = fs::last_write_time(path_, ec);
+    if (ec) return;
+    loaded_ = fs::last_write_time(path_, ec);
+    loadedSize_ = fs::file_size(path_, ec);
 }
 
 }  // namespace kaz

@@ -5,6 +5,7 @@
 // so each process reloads the file when another one has changed it.
 #pragma once
 
+#include <cstdint>
 #include <filesystem>
 #include <map>
 #include <optional>
@@ -27,7 +28,9 @@ private:
     void save();
 
     std::filesystem::path path_;
+    // mtime alone misses a write within the same clock tick, so size is checked too.
     std::filesystem::file_time_type loaded_{};
+    std::uintmax_t loadedSize_ = std::uintmax_t(-1);
     std::map<std::u32string, std::u32string> entries_;
 };
 
