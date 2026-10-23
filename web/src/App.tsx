@@ -9,18 +9,15 @@ import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { convertText, loadEngine, type Engine } from "@/lib/engine"
+import { LANGS, useI18n } from "@/lib/i18n"
+import { cn } from "@/lib/utils"
 
 const LETTERS: [string, string[]][] = [
   ["к", ["к", "қ"]], ["г", ["г", "ғ"]], ["н", ["н", "ң"]], ["о", ["о", "ө"]],
   ["у", ["у", "ұ", "ү"]], ["а", ["а", "ә"]], ["и", ["и", "і"]], ["х", ["х", "һ"]],
 ]
 
-const STATS = [
-  { value: "99.0%", label: "top-1 accuracy", detail: "on held-out words with ambiguous letters", icon: Gauge },
-  { value: "99.9%", label: "in the top 3", detail: "the right word is almost always one key away", icon: Check },
-  { value: "<10 ms", label: "per word", detail: "a 2-layer BiLSTM, int8, on your CPU", icon: Cpu },
-  { value: "2.6 MB", label: "model", detail: "nothing leaves your machine", icon: ShieldCheck },
-]
+const STAT_ICONS = [Gauge, Check, Cpu, ShieldCheck]
 
 function useTheme() {
   const [dark, setDark] = useState(() => {
@@ -46,6 +43,7 @@ function Logo({ className = "size-7" }: { className?: string }) {
 }
 
 function CopyButton({ text }: { text: string }) {
+  const { t } = useI18n()
   const [done, setDone] = useState(false)
   return (
     <Button
@@ -58,24 +56,25 @@ function CopyButton({ text }: { text: string }) {
         setTimeout(() => setDone(false), 1500)
       }}
     >
-      {done ? <Check /> : <Copy />} {done ? "Copied" : "Copy"}
+      {done ? <Check /> : <Copy />} {done ? t.copied : t.copy}
     </Button>
   )
 }
 
 function ConvertPad({ engine }: { engine: Engine }) {
+  const { t } = useI18n()
   const [text, setText] = useState("Казакстан Республикасы - тауелсиз мемлекет. Бугин ауа райы оте жаксы.")
   const deferred = useDeferredValue(text)
   const out = useMemo(() => convertText(engine, deferred), [engine, deferred])
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium text-muted-foreground">Russian keyboard text</span>
-        <Textarea value={text} onChange={(e) => setText(e.target.value)} className="min-h-52 resize-none text-lg" placeholder="Paste text typed without Kazakh letters…" />
+        <span className="text-sm font-medium text-muted-foreground">{t.convertFrom}</span>
+        <Textarea value={text} onChange={(e) => setText(e.target.value)} className="min-h-52 resize-none text-lg" placeholder={t.convertPlaceholder} />
       </div>
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-muted-foreground">Kazakh</span>
+          <span className="text-sm font-medium text-muted-foreground">{t.convertTo}</span>
           <CopyButton text={out} />
         </div>
         <div className="min-h-52 rounded-md border bg-muted/40 px-3 py-2 text-lg break-words whitespace-pre-wrap">{out}</div>
@@ -101,7 +100,31 @@ function Code({ children }: { children: string }) {
   )
 }
 
+function LanguageSwitcher() {
+  const { lang, t, setLang } = useI18n()
+  return (
+    <div role="group" aria-label={t.language} className="flex items-center rounded-md border bg-background/60 p-0.5">
+      {LANGS.map(({ code, label }) => (
+        <button
+          key={code}
+          type="button"
+          lang={code}
+          aria-pressed={lang === code}
+          onClick={() => setLang(code)}
+          className={cn(
+            "rounded-sm px-2 py-1 text-xs font-medium transition-colors",
+            lang === code ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export default function App() {
+  const { t } = useI18n()
   const [dark, toggleTheme] = useTheme()
   const [engine, setEngine] = useState<Engine | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -122,10 +145,11 @@ export default function App() {
             <Logo /> KazType
           </a>
           <nav className="flex items-center gap-1">
-            <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex"><a href="#demo">Demo</a></Button>
-            <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex"><a href="#how">How it works</a></Button>
-            <Button variant="ghost" size="sm" asChild><a href="#download">Download</a></Button>
-            <Button variant="ghost" size="icon" aria-label="Toggle theme" onClick={toggleTheme}>
+            <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex"><a href="#demo">{t.nav.demo}</a></Button>
+            <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex"><a href="#how">{t.nav.how}</a></Button>
+            <Button variant="ghost" size="sm" asChild><a href="#download">{t.nav.download}</a></Button>
+            <LanguageSwitcher />
+            <Button variant="ghost" size="icon" aria-label={t.nav.theme} onClick={toggleTheme}>
               {dark ? <Sun /> : <Moon />}
             </Button>
           </nav>
@@ -135,20 +159,18 @@ export default function App() {
       <main className="relative z-10">
         <section className="mx-auto flex max-w-4xl flex-col items-center px-4 pt-20 pb-12 text-center sm:pt-28">
           <Badge variant="outline" className="mb-6 gap-1.5 rounded-full bg-background/60 px-3 py-1 backdrop-blur">
-            <span className="size-1.5 rounded-full bg-emerald-500" /> On-device neural input method · macOS & Windows
+            <span className="size-1.5 rounded-full bg-emerald-500" /> {t.badge}
           </Badge>
           <h1 className="text-4xl font-semibold tracking-tighter text-balance sm:text-6xl">
-            Type Kazakh on a{" "}
-            <span className="bg-gradient-to-b from-foreground to-foreground/50 bg-clip-text text-transparent">Russian keyboard.</span>
+            {t.heroLead}
+            <span className="bg-gradient-to-b from-foreground to-foreground/50 bg-clip-text text-transparent">{t.heroAccent}</span>
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-pretty text-muted-foreground">
-            Type <span className="font-medium text-foreground">казакстан</span>, get{" "}
-            <span className="font-medium text-foreground">қазақстан</span>. A tiny neural network restores ә ғ қ ң ө ұ ү һ і as
-            you type, right on your machine.
+            {t.heroText}
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Button size="lg" asChild><a href="#demo">Try it now <ArrowRight /></a></Button>
-            <Button size="lg" variant="outline" asChild><a href="#download"><Download /> Download</a></Button>
+            <Button size="lg" asChild><a href="#demo">{t.tryNow} <ArrowRight /></a></Button>
+            <Button size="lg" variant="outline" asChild><a href="#download"><Download /> {t.download}</a></Button>
           </div>
         </section>
 
@@ -156,16 +178,16 @@ export default function App() {
           <Card className="overflow-visible border-border/60 bg-card/70 shadow-2xl shadow-black/5 backdrop-blur-xl">
             <CardContent>
               {error ? (
-                <p className="py-16 text-center text-sm text-destructive">Could not load the model: {error}</p>
+                <p className="py-16 text-center text-sm text-destructive">{t.loadError} {error}</p>
               ) : !engine ? (
                 <div className="flex items-center justify-center gap-2 py-24 text-sm text-muted-foreground">
-                  <Loader2 className="size-4 animate-spin" /> Loading the model (2.6 MB)…
+                  <Loader2 className="size-4 animate-spin" /> {t.loading}
                 </div>
               ) : (
                 <Tabs defaultValue="type">
                   <TabsList className="mb-4">
-                    <TabsTrigger value="type"><Keyboard /> Type live</TabsTrigger>
-                    <TabsTrigger value="convert"><Copy /> Convert text</TabsTrigger>
+                    <TabsTrigger value="type"><Keyboard /> {t.tabType}</TabsTrigger>
+                    <TabsTrigger value="convert"><Copy /> {t.tabConvert}</TabsTrigger>
                   </TabsList>
                   <TabsContent value="type"><TypePad engine={engine} /></TabsContent>
                   <TabsContent value="convert"><ConvertPad engine={engine} /></TabsContent>
@@ -177,10 +199,9 @@ export default function App() {
 
         <section id="how" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-24">
           <div className="mx-auto mb-10 max-w-2xl text-center">
-            <h2 className="text-3xl font-semibold tracking-tight">Eight keys, nine missing letters</h2>
+            <h2 className="text-3xl font-semibold tracking-tight">{t.howTitle}</h2>
             <p className="mt-3 text-muted-foreground">
-              A Russian layout has no key for nine Kazakh letters. KazType reads each typed letter in context and picks the
-              Kazakh one you meant.
+              {t.howText}
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -196,7 +217,9 @@ export default function App() {
           </div>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {STATS.map(({ value, label, detail, icon: Icon }) => (
+            {t.stats.map(({ value, label, detail }, i) => {
+              const Icon = STAT_ICONS[i]
+              return (
               <Card key={label} className="gap-2 bg-card/60 backdrop-blur">
                 <CardHeader>
                   <Icon className="mb-2 size-4 text-muted-foreground" />
@@ -205,16 +228,16 @@ export default function App() {
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground">{detail}</CardContent>
               </Card>
-            ))}
+              )
+            })}
           </div>
         </section>
 
         <section id="download" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-24">
           <div className="mx-auto mb-10 max-w-2xl text-center">
-            <h2 className="text-3xl font-semibold tracking-tight">Get KazType</h2>
+            <h2 className="text-3xl font-semibold tracking-tight">{t.getTitle}</h2>
             <p className="mt-3 text-muted-foreground">
-              Works in every app: browsers, Word, Telegram, terminals. Pick a candidate with <span className="font-mono">1–9</span>;
-              your choices are remembered.
+              {t.getText}
             </p>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
@@ -222,21 +245,21 @@ export default function App() {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Monitor className="size-5" />
-                  <CardTitle className="text-xl">Windows 10 & 11</CardTitle>
+                  <CardTitle className="text-xl">{t.winTitle}</CardTitle>
                 </div>
-                <CardDescription>A Text Services Framework input method. x64, x86 and ARM64.</CardDescription>
+                <CardDescription>{t.winDesc}</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
                 <ol className="flex flex-col gap-3">
-                  <Step n={1}>Build with Visual Studio 2022 and CMake:</Step>
+                  <Step n={1}>{t.winStep1}</Step>
                 </ol>
                 <Code>{"cd windows\n.\\build.ps1"}</Code>
                 <ol start={2} className="flex flex-col gap-3">
-                  <Step n={2}>Install from an administrator PowerShell:</Step>
+                  <Step n={2}>{t.winStep2}</Step>
                 </ol>
                 <Code>{"powershell -ExecutionPolicy Bypass -File dist\\install.ps1"}</Code>
                 <ol className="flex flex-col gap-3">
-                  <Step n={3}>Press <span className="font-mono">Win + Space</span> and choose “Kazakh – KazType”.</Step>
+                  <Step n={3}>{t.winStep3}</Step>
                 </ol>
               </CardContent>
             </Card>
@@ -246,27 +269,27 @@ export default function App() {
                   <Laptop className="size-5" />
                   <CardTitle className="text-xl">macOS 13+</CardTitle>
                 </div>
-                <CardDescription>An Input Method Kit app with a Core ML model. Apple silicon and Intel.</CardDescription>
+                <CardDescription>{t.macDesc}</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
                 <ol className="flex flex-col gap-3">
-                  <Step n={1}>Build and install (needs only Xcode Command Line Tools):</Step>
+                  <Step n={1}>{t.macStep1}</Step>
                 </ol>
                 <Code>{"cd macos\nmake install"}</Code>
                 <ol start={2} className="flex flex-col gap-3">
-                  <Step n={2}>Choose “Қазақша (KazType)” in the input menu. If it is missing, log out and back in.</Step>
+                  <Step n={2}>{t.macStep2}</Step>
                 </ol>
               </CardContent>
             </Card>
           </div>
-          <p className="mt-4 text-center text-sm text-muted-foreground">Prebuilt installers are coming soon.</p>
+          <p className="mt-4 text-center text-sm text-muted-foreground">{t.installersSoon}</p>
         </section>
       </main>
 
       <Separator />
       <footer className="relative z-10 mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-8 text-sm text-muted-foreground sm:flex-row">
         <span className="flex items-center gap-2"><Logo className="size-5 text-xs" /> KazType</span>
-        <span>The demo runs entirely in your browser. Nothing you type is sent anywhere.</span>
+        <span>{t.footer}</span>
       </footer>
     </div>
   )

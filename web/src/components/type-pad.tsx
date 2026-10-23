@@ -4,6 +4,7 @@ import { RotateCcw, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Kbd } from "@/components/ui/kbd"
 import type { Engine } from "@/lib/engine"
+import { useI18n } from "@/lib/i18n"
 import { emptyIme, step, type ImeAction, type ImeState } from "@/lib/ime"
 import { russianKey } from "@/lib/keys"
 import { cn } from "@/lib/utils"
@@ -12,6 +13,7 @@ const EXAMPLES = ["казакстан", "бугин ауа райы жаксы",
 
 /** A text box that behaves like the KazType input method. */
 export function TypePad({ engine }: { engine: Engine }) {
+  const { t } = useI18n()
   const [s, setS] = useState<ImeState>(emptyIme)
   const [focused, setFocused] = useState(false)
   const input = useRef<HTMLTextAreaElement>(null)
@@ -89,7 +91,7 @@ export function TypePad({ engine }: { engine: Engine }) {
       >
         <textarea
           ref={input}
-          aria-label="Type Kazakh with Russian letters"
+          aria-label={t.padLabel}
           className="absolute inset-0 h-full w-full resize-none opacity-0"
           autoCapitalize="off"
           autoComplete="off"
@@ -110,7 +112,7 @@ export function TypePad({ engine }: { engine: Engine }) {
           )}
           {focused && <span className="ml-px inline-block h-[1.1em] w-0.5 translate-y-[0.15em] animate-pulse bg-foreground" />}
           {empty && !focused && (
-            <span className="text-muted-foreground">Click and type in Russian letters…</span>
+            <span className="text-muted-foreground">{t.padPlaceholder}</span>
           )}
         </p>
 
@@ -141,25 +143,25 @@ export function TypePad({ engine }: { engine: Engine }) {
 
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <span className="flex items-center gap-1"><Kbd>↑</Kbd><Kbd>↓</Kbd> choose</span>
-          <span className="flex items-center gap-1"><Kbd>1</Kbd>–<Kbd>9</Kbd> pick</span>
-          <span className="flex items-center gap-1"><Kbd>Space</Kbd> commit</span>
-          <span className="flex items-center gap-1"><Kbd>Esc</Kbd> keep as typed</span>
+          <span className="flex items-center gap-1"><Kbd>↑</Kbd><Kbd>↓</Kbd> {t.keyChoose}</span>
+          <span className="flex items-center gap-1"><Kbd>1</Kbd>–<Kbd>9</Kbd> {t.keyPick}</span>
+          <span className="flex items-center gap-1"><Kbd>Space</Kbd> {t.keyCommit}</span>
+          <span className="flex items-center gap-1"><Kbd>Esc</Kbd> {t.keyEscape}</span>
         </div>
         <div className="flex items-center gap-2">
           {s.ms !== null && (
             <span className="flex items-center gap-1 font-mono text-xs tabular-nums">
-              <Zap className="size-3" /> {s.ms.toFixed(1)} ms · on-device
+              <Zap className="size-3" /> {s.ms.toFixed(1)} {t.onDevice}
             </span>
           )}
           <Button variant="ghost" size="sm" onClick={() => dispatch({ type: "clear" })} disabled={empty}>
-            <RotateCcw /> Clear
+            <RotateCcw /> {t.clear}
           </Button>
         </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2 text-sm">
-        <span className="text-muted-foreground">Try:</span>
+        <span className="text-muted-foreground">{t.try}</span>
         {EXAMPLES.map((ex) => (
           <Button key={ex} variant="outline" size="sm" className="rounded-full font-normal" onClick={() => typeString(ex + " ")}>
             {ex}
@@ -167,7 +169,7 @@ export function TypePad({ engine }: { engine: Engine }) {
         ))}
       </div>
       <p className="text-xs text-muted-foreground">
-        No Russian keyboard? Type anyway. Keys are read by position on the ЙЦУКЕН layout, as KazType does.
+        {t.noKeyboard}
       </p>
     </div>
   )
