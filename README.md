@@ -114,3 +114,7 @@ cd web
 sh wasm/build.sh   # compile windows/core to WebAssembly (Docker, emscripten/emsdk)
 npm install && npm run dev
 ```
+
+## License
+
+[MIT](LICENSE). Contributions are welcome through issues and pull requests.

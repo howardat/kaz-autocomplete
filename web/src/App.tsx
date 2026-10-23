@@ -1,6 +1,7 @@
 import { useDeferredValue, useEffect, useMemo, useState } from "react"
-import { ArrowRight, Check, Copy, Cpu, Download, Gauge, Keyboard, Laptop, Loader2, Monitor, Moon, ShieldCheck, Sun } from "lucide-react"
+import { ArrowRight, Check, Copy, Cpu, Download, Gauge, Heart, Keyboard, Laptop, Loader2, Monitor, Moon, Share2, ShieldCheck, Sun } from "lucide-react"
 
+import { GitHubIcon, InstagramIcon, LinkedInIcon } from "@/components/brand-icons"
 import { TypePad } from "@/components/type-pad"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -10,6 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { convertText, loadEngine, type Engine } from "@/lib/engine"
 import { LANGS, useI18n } from "@/lib/i18n"
+import { AUTHOR, KASPI_PHONE, LICENSE_URL, RELEASES_URL, REPO_URL, SOCIALS } from "@/lib/links"
+import { useReleases } from "@/lib/releases"
 import { cn } from "@/lib/utils"
 
 const LETTERS: [string, string[]][] = [
@@ -92,13 +95,55 @@ function Step({ n, children }: { n: number; children: React.ReactNode }) {
   )
 }
 
-function Code({ children }: { children: string }) {
+function ShareButton() {
+  const { t } = useI18n()
+  const [copied, setCopied] = useState(false)
+  const share = async () => {
+    const url = window.location.origin + window.location.pathname
+    if (navigator.share) {
+      try { await navigator.share({ title: "KazType", text: t.shareText, url }) } catch { /* dismissed */ }
+      return
+    }
+    await navigator.clipboard.writeText(url)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
   return (
-    <div className="group relative">
-      <pre className="overflow-x-auto rounded-lg border bg-muted/50 p-3 font-mono text-xs leading-relaxed">{children}</pre>
-    </div>
+    <Button variant="ghost" size="sm" onClick={share} aria-label={t.share}>
+      {copied ? <Check /> : <Share2 />} <span className="hidden sm:inline">{copied ? t.linkCopied : t.share}</span>
+    </Button>
   )
 }
+
+function DonateButton() {
+  const { t } = useI18n()
+  const [copied, setCopied] = useState(false)
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      className="ml-2 h-auto py-1.5"
+      title={`${t.donateKaspi}: ${KASPI_PHONE}`}
+      onClick={async () => {
+        await navigator.clipboard.writeText(KASPI_PHONE.replace(/\s/g, ""))
+        setCopied(true)
+        setTimeout(() => setCopied(false), 1500)
+      }}
+    >
+      {copied ? <Check /> : <Heart className="text-rose-500" />}
+      <span className="flex flex-col items-start leading-tight">
+        <span>{copied ? t.numberCopied : t.donate}</span>
+        <span className="font-mono text-xs text-muted-foreground">{t.donateKaspi} · {KASPI_PHONE}</span>
+      </span>
+    </Button>
+  )
+}
+
+const SOCIAL_LINKS = [
+  { href: SOCIALS.github, label: "GitHub", Icon: GitHubIcon },
+  { href: SOCIALS.linkedin, label: "LinkedIn", Icon: LinkedInIcon },
+  { href: SOCIALS.instagram, label: "Instagram", Icon: InstagramIcon },
+].filter((s) => s.href)
 
 function LanguageSwitcher() {
   const { lang, t, setLang } = useI18n()
@@ -125,6 +170,7 @@ function LanguageSwitcher() {
 
 export default function App() {
   const { t } = useI18n()
+  const releases = useReleases()
   const [dark, toggleTheme] = useTheme()
   const [engine, setEngine] = useState<Engine | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -148,6 +194,10 @@ export default function App() {
             <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex"><a href="#demo">{t.nav.demo}</a></Button>
             <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex"><a href="#how">{t.nav.how}</a></Button>
             <Button variant="ghost" size="sm" asChild><a href="#download">{t.nav.download}</a></Button>
+            <ShareButton />
+            <Button variant="ghost" size="icon" asChild className="hidden sm:inline-flex">
+              <a href={REPO_URL} target="_blank" rel="noreferrer" aria-label="GitHub"><GitHubIcon /></a>
+            </Button>
             <LanguageSwitcher />
             <Button variant="ghost" size="icon" aria-label={t.nav.theme} onClick={toggleTheme}>
               {dark ? <Sun /> : <Moon />}
@@ -158,9 +208,14 @@ export default function App() {
 
       <main className="relative z-10">
         <section className="mx-auto flex max-w-4xl flex-col items-center px-4 pt-20 pb-12 text-center sm:pt-28">
-          <Badge variant="outline" className="mb-6 gap-1.5 rounded-full bg-background/60 px-3 py-1 backdrop-blur">
-            <span className="size-1.5 rounded-full bg-emerald-500" /> {t.badge}
-          </Badge>
+          <div className="mb-6 flex flex-wrap justify-center gap-2">
+            <Badge variant="outline" className="gap-1.5 rounded-full bg-background/60 px-3 py-1 backdrop-blur">
+              <span className="size-1.5 rounded-full bg-emerald-500" /> {t.badge}
+            </Badge>
+            <Badge variant="outline" className="rounded-full bg-background/60 px-3 py-1 backdrop-blur" asChild>
+              <a href={REPO_URL} target="_blank" rel="noreferrer"><GitHubIcon /> {t.openSource}</a>
+            </Badge>
+          </div>
           <h1 className="text-4xl font-semibold tracking-tighter text-balance sm:text-6xl">
             {t.heroLead}
             <span className="bg-gradient-to-b from-foreground to-foreground/50 bg-clip-text text-transparent">{t.heroAccent}</span>
@@ -172,6 +227,9 @@ export default function App() {
             <Button size="lg" asChild><a href="#demo">{t.tryNow} <ArrowRight /></a></Button>
             <Button size="lg" variant="outline" asChild><a href="#download"><Download /> {t.download}</a></Button>
           </div>
+          {releases && releases.downloads > 0 && (
+            <p className="mt-4 text-sm text-muted-foreground tabular-nums">{t.downloads(releases.downloads)}</p>
+          )}
         </section>
 
         <section id="demo" className="mx-auto max-w-4xl scroll-mt-20 px-4 pb-24">
@@ -250,16 +308,12 @@ export default function App() {
                 <CardDescription>{t.winDesc}</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
+                <Button asChild className="self-start">
+                  <a href={releases?.windows ?? RELEASES_URL}><Download /> {t.downloadFile(".exe")}</a>
+                </Button>
                 <ol className="flex flex-col gap-3">
                   <Step n={1}>{t.winStep1}</Step>
-                </ol>
-                <Code>{"cd windows\n.\\build.ps1"}</Code>
-                <ol start={2} className="flex flex-col gap-3">
                   <Step n={2}>{t.winStep2}</Step>
-                </ol>
-                <Code>{"powershell -ExecutionPolicy Bypass -File dist\\install.ps1"}</Code>
-                <ol className="flex flex-col gap-3">
-                  <Step n={3}>{t.winStep3}</Step>
                 </ol>
               </CardContent>
             </Card>
@@ -272,24 +326,45 @@ export default function App() {
                 <CardDescription>{t.macDesc}</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
+                <Button asChild className="self-start">
+                  <a href={releases?.mac ?? RELEASES_URL}><Download /> {t.downloadFile(".pkg")}</a>
+                </Button>
                 <ol className="flex flex-col gap-3">
                   <Step n={1}>{t.macStep1}</Step>
-                </ol>
-                <Code>{"cd macos\nmake install"}</Code>
-                <ol start={2} className="flex flex-col gap-3">
                   <Step n={2}>{t.macStep2}</Step>
                 </ol>
               </CardContent>
             </Card>
           </div>
-          <p className="mt-4 text-center text-sm text-muted-foreground">{t.installersSoon}</p>
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            {releases && <>{t.version(releases.version)} · </>}
+            <a href={`${REPO_URL}#build-and-install`} target="_blank" rel="noreferrer" className="underline underline-offset-4 hover:text-foreground">
+              {t.buildFromSource}
+            </a>
+          </p>
         </section>
       </main>
 
       <Separator />
-      <footer className="relative z-10 mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-8 text-sm text-muted-foreground sm:flex-row">
-        <span className="flex items-center gap-2"><Logo className="size-5 text-xs" /> KazType</span>
-        <span>{t.footer}</span>
+      <footer className="relative z-10 mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 text-sm text-muted-foreground">
+        <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+          <div className="flex flex-col items-center gap-1 sm:items-start">
+            <span className="flex items-center gap-2 font-medium text-foreground"><Logo className="size-5 text-xs" /> KazType</span>
+            <span>{t.madeBy} <span className="text-foreground">{AUTHOR}</span>, {t.authorRole}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            {SOCIAL_LINKS.map(({ href, label, Icon }) => (
+              <Button key={label} variant="ghost" size="icon" asChild>
+                <a href={href} target="_blank" rel="noreferrer" aria-label={label}><Icon /></a>
+              </Button>
+            ))}
+            <DonateButton />
+          </div>
+        </div>
+        <div className="flex flex-col items-center justify-between gap-2 text-xs sm:flex-row">
+          <span>{t.footer}</span>
+          <a href={LICENSE_URL} target="_blank" rel="noreferrer" className="hover:text-foreground">{t.license}</a>
+        </div>
       </footer>
     </div>
   )
