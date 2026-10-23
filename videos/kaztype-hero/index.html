@@ -1,0 +1,2058 @@
+<!DOCTYPE html>
+<html lang="kk" data-composition-variables="[{&quot;id&quot;:&quot;look&quot;,&quot;type&quot;:&quot;enum&quot;,&quot;label&quot;:&quot;Look&quot;,&quot;default&quot;:&quot;studio&quot;,&quot;options&quot;:[{&quot;value&quot;:&quot;desktop&quot;,&quot;label&quot;:&quot;Desktop&quot;},{&quot;value&quot;:&quot;studio&quot;,&quot;label&quot;:&quot;Studio&quot;},{&quot;value&quot;:&quot;night&quot;,&quot;label&quot;:&quot;Night&quot;},{&quot;value&quot;:&quot;macbook&quot;,&quot;label&quot;:&quot;MacBook&quot;}]},{&quot;id&quot;:&quot;ground&quot;,&quot;type&quot;:&quot;enum&quot;,&quot;label&quot;:&quot;Background&quot;,&quot;default&quot;:&quot;grad-lagoon&quot;,&quot;options&quot;:[{&quot;value&quot;:&quot;sand&quot;,&quot;label&quot;:&quot;Warm sand&quot;},{&quot;value&quot;:&quot;graphite&quot;,&quot;label&quot;:&quot;Graphite&quot;},{&quot;value&quot;:&quot;steppe&quot;,&quot;label&quot;:&quot;Steppe sky&quot;},{&quot;value&quot;:&quot;navy&quot;,&quot;label&quot;:&quot;Deep navy&quot;},{&quot;value&quot;:&quot;paper&quot;,&quot;label&quot;:&quot;Paper white&quot;},{&quot;value&quot;:&quot;grad-dawn&quot;,&quot;label&quot;:&quot;Gradient: dawn&quot;},{&quot;value&quot;:&quot;grad-lagoon&quot;,&quot;label&quot;:&quot;Gradient: lagoon&quot;},{&quot;value&quot;:&quot;grad-aurora&quot;,&quot;label&quot;:&quot;Gradient: aurora&quot;},{&quot;value&quot;:&quot;grad-dusk&quot;,&quot;label&quot;:&quot;Gradient: dusk&quot;}]},{&quot;id&quot;:&quot;badges&quot;,&quot;type&quot;:&quot;enum&quot;,&quot;label&quot;:&quot;Badges&quot;,&quot;default&quot;:&quot;dock&quot;,&quot;options&quot;:[{&quot;value&quot;:&quot;headline&quot;,&quot;label&quot;:&quot;Rolling headline&quot;},{&quot;value&quot;:&quot;dock&quot;,&quot;label&quot;:&quot;Dock&quot;},{&quot;value&quot;:&quot;chips&quot;,&quot;label&quot;:&quot;Collected chips&quot;},{&quot;value&quot;:&quot;none&quot;,&quot;label&quot;:&quot;None&quot;}]},{&quot;id&quot;:&quot;works-in&quot;,&quot;type&quot;:&quot;string&quot;,&quot;label&quot;:&quot;Works in&quot;,&quot;default&quot;:&quot;Works in&quot;},{&quot;id&quot;:&quot;everywhere&quot;,&quot;type&quot;:&quot;string&quot;,&quot;label&quot;:&quot;Everywhere (last chip)&quot;,&quot;default&quot;:&quot;and everywhere you need&quot;},{&quot;id&quot;:&quot;everywhere-line&quot;,&quot;type&quot;:&quot;string&quot;,&quot;label&quot;:&quot;Everywhere (whole line)&quot;,&quot;default&quot;:&quot;Works everywhere you need&quot;}]">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="assets/typing.js"></script>
+    <style>
+      @font-face {
+        font-family: "Times New Roman";
+        src: local("Times New Roman"), local("TimesNewRomanPSMT");
+      }
+      @font-face {
+        font-family: "Times New Roman";
+        font-weight: 700;
+        src: local("Times New Roman Bold"), local("TimesNewRomanPS-BoldMT");
+      }
+      @font-face {
+        font-family: "SF Pro";
+        src: local("SF Pro Display Regular"), local("SFProDisplay-Regular");
+      }
+      :root {
+        --accent: #0a84ff;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #d9c7c4;
+      }
+      /* The Mac desktop behind every window: the same computer in every shot. */
+      #root {
+        background:
+          radial-gradient(60% 70% at 18% 22%, #f2b38f 0%, rgba(242, 179, 143, 0) 70%),
+          radial-gradient(55% 65% at 85% 80%, #6f86d6 0%, rgba(111, 134, 214, 0) 70%),
+          radial-gradient(50% 60% at 70% 15%, #c9a4d8 0%, rgba(201, 164, 216, 0) 70%),
+          #d9c7c4;
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+      .shot {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+      }
+      .cam {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1440px;
+        height: 900px;
+        transform-origin: 0 0;
+      }
+      .app {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        border-radius: 12px;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.22), 0 28px 70px rgba(0, 0, 0, 0.35);
+      }
+      svg {
+        display: block;
+      }
+
+      /* What KazType draws: the composing word, its candidates and the caret. */
+      .mk {
+        position: relative;
+        text-decoration: underline;
+        text-decoration-color: var(--accent);
+        text-decoration-thickness: 2px;
+        text-underline-offset: 3px;
+      }
+      .caret {
+        display: inline-block;
+        width: 1.5px;
+        height: 1.15em;
+        margin-left: 1px;
+        vertical-align: -0.2em;
+        background: currentColor;
+      }
+      .ime {
+        position: absolute;
+        left: -6px;
+        top: calc(100% + 7px);
+        z-index: 5;
+        display: flex;
+        flex-direction: column;
+        min-width: 150px;
+        padding: 4px;
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.18), 0 8px 24px rgba(0, 0, 0, 0.18);
+        font-family: "SF Pro", Inter, sans-serif;
+        font-size: 15px;
+        line-height: 1.25;
+        color: #1d1d1f;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+      .ime.up {
+        top: auto;
+        bottom: calc(100% + 9px);
+      }
+      .ime .row {
+        display: flex;
+        gap: 10px;
+        padding: 3px 10px 3px 8px;
+        border-radius: 5px;
+      }
+      .ime .row b {
+        font-weight: 400;
+        color: #8a8a8e;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+      .ime .row.sel {
+        background: var(--accent);
+        color: #fff;
+      }
+      .ime .row.sel b {
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      /* ---------- WhatsApp (macOS) ---------- */
+      /* The candidate panel is its own window and may hang below WhatsApp's, so this app clips by its parts. */
+      #wa .app {
+        overflow: visible;
+        font-family: "SF Pro", Inter, sans-serif;
+        color: #111b21;
+        background: #fff;
+      }
+      .wa-side {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 360px;
+        overflow: hidden;
+        border-radius: 12px 0 0 12px;
+        border-right: 1px solid #e9edef;
+        background: #fff;
+      }
+      .wa-side h2 {
+        padding: 22px 20px 12px;
+        font-size: 22px;
+        font-weight: 600;
+      }
+      .wa-search {
+        margin: 0 14px 10px;
+        height: 36px;
+        border-radius: 18px;
+        background: #f0f2f5;
+        color: #667781;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 14px;
+      }
+      .wa-chat {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        padding: 10px 16px;
+      }
+      .wa-chat.on {
+        background: #f0f2f5;
+      }
+      .av {
+        flex: none;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        color: #fff;
+        font-weight: 500;
+      }
+      .wa-chat .av {
+        width: 49px;
+        height: 49px;
+        font-size: 19px;
+      }
+      .wa-chat .meta {
+        flex: 1;
+        min-width: 0;
+        border-bottom: 1px solid #f0f2f5;
+        padding-bottom: 10px;
+      }
+      .wa-chat .top {
+        display: flex;
+        justify-content: space-between;
+        font-size: 16px;
+      }
+      .wa-chat .top span {
+        font-size: 12px;
+        color: #667781;
+      }
+      .wa-chat p {
+        font-size: 14px;
+        color: #667781;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-top: 2px;
+      }
+      .wa-pane {
+        position: absolute;
+        left: 360px;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        border-radius: 0 12px 12px 0;
+        background-color: #efeae2;
+        background-image: radial-gradient(rgba(0, 0, 0, 0.035) 1.2px, transparent 1.3px),
+          radial-gradient(rgba(0, 0, 0, 0.025) 1px, transparent 1.1px);
+        background-size: 26px 26px, 17px 17px;
+        background-position: 0 0, 9px 11px;
+      }
+      .wa-head {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 60px;
+        background: #f0f2f5;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 0 16px;
+        border-bottom: 1px solid #e1e4e7;
+      }
+      .wa-head .av {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+      }
+      .wa-head b {
+        display: block;
+        font-weight: 500;
+        font-size: 16px;
+      }
+      .wa-head span {
+        font-size: 13px;
+        color: #667781;
+      }
+      .wa-msgs {
+        position: absolute;
+        left: 64px;
+        right: 64px;
+        bottom: 78px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 14.5px;
+      }
+      .wa-day {
+        align-self: center;
+        background: #fff;
+        color: #54656f;
+        font-size: 12.5px;
+        padding: 5px 12px;
+        border-radius: 8px;
+        box-shadow: 0 1px 0.5px rgba(11, 20, 26, 0.13);
+        margin-bottom: 6px;
+      }
+      .wa-bub {
+        max-width: 62%;
+        padding: 6px 9px 8px;
+        border-radius: 8px;
+        box-shadow: 0 1px 0.5px rgba(11, 20, 26, 0.13);
+        line-height: 1.35;
+      }
+      .wa-bub.in {
+        align-self: flex-start;
+        background: #fff;
+      }
+      .wa-bub.out {
+        align-self: flex-end;
+        background: #d9fdd3;
+      }
+      .wa-bub i {
+        font-style: normal;
+        float: right;
+        margin: 6px 0 -4px 12px;
+        font-size: 11px;
+        color: #667781;
+      }
+      .wa-bar {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        min-height: 62px;
+        border-radius: 0 0 12px 0;
+        background: #f0f2f5;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 16px;
+        color: #54656f;
+      }
+      .wa-input {
+        flex: 1;
+        min-height: 42px;
+        border-radius: 21px;
+        background: #fff;
+        padding: 10px 16px;
+        font-size: 15px;
+        line-height: 1.45;
+        color: #111b21;
+      }
+
+      /* ---------- Gmail ---------- */
+      #gm .app {
+        font-family: Roboto, sans-serif;
+        color: #1f1f1f;
+        background: #f6f8fc;
+      }
+      .gm-top {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 0 18px;
+      }
+      .gm-search {
+        margin-left: 160px;
+        width: 720px;
+        height: 48px;
+        border-radius: 24px;
+        background: #e9eef6;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 0 18px;
+        color: #444746;
+        font-size: 16px;
+      }
+      .gm-nav {
+        position: absolute;
+        left: 8px;
+        top: 72px;
+        width: 240px;
+        font-size: 14px;
+        color: #202124;
+      }
+      .gm-compose-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        height: 56px;
+        padding: 0 24px 0 18px;
+        border-radius: 16px;
+        background: #c2e7ff;
+        font-weight: 500;
+        margin: 0 0 14px 4px;
+      }
+      .gm-nav div.i {
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 14px 0 26px;
+        border-radius: 0 16px 16px 0;
+      }
+      .gm-nav div.i.on {
+        background: #d3e3fd;
+        font-weight: 700;
+      }
+      .gm-list {
+        position: absolute;
+        left: 256px;
+        right: 16px;
+        top: 72px;
+        bottom: 16px;
+        border-radius: 16px;
+        background: #fff;
+        font-size: 14px;
+        overflow: hidden;
+      }
+      .gm-row {
+        display: flex;
+        gap: 18px;
+        height: 40px;
+        align-items: center;
+        padding: 0 18px;
+        border-bottom: 1px solid #f1f3f4;
+        white-space: nowrap;
+      }
+      .gm-row b {
+        width: 180px;
+        font-weight: 700;
+      }
+      .gm-row span {
+        color: #5f6368;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .gm-row.read b {
+        font-weight: 400;
+      }
+      .gm-compose {
+        position: absolute;
+        right: 70px;
+        bottom: 0;
+        width: 560px;
+        height: 560px;
+        border-radius: 12px 12px 0 0;
+        background: #fff;
+        box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
+        display: flex;
+        flex-direction: column;
+        font-size: 14px;
+      }
+      .gm-ch {
+        height: 40px;
+        border-radius: 12px 12px 0 0;
+        background: #f2f6fc;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 14px 0 16px;
+        font-weight: 500;
+        color: #041e49;
+      }
+      .gm-field {
+        margin: 0 16px;
+        height: 38px;
+        border-bottom: 1px solid #f1f1f1;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #5f6368;
+      }
+      .gm-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 24px;
+        padding: 0 10px 0 2px;
+        border-radius: 12px;
+        border: 1px solid #dadce0;
+        color: #1f1f1f;
+      }
+      .gm-chip .av {
+        width: 20px;
+        height: 20px;
+        font-size: 11px;
+      }
+      .gm-body {
+        flex: 1;
+        padding: 14px 16px;
+        font-family: Arial, Roboto, sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+        color: #222;
+      }
+      .gm-foot {
+        height: 64px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 0 16px;
+        color: #444746;
+      }
+      .gm-send {
+        height: 36px;
+        padding: 0 22px;
+        border-radius: 18px;
+        background: #0b57d0;
+        color: #fff;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+      }
+
+      /* ---------- Word (macOS) ---------- */
+      #wd .app {
+        font-family: "SF Pro", Inter, sans-serif;
+        background: #e9e9e9;
+        color: #242424;
+      }
+      .wd-title {
+        height: 38px;
+        background: #185abd;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        padding: 0 14px;
+        gap: 8px;
+        font-size: 13px;
+      }
+      .wd-title .lights {
+        display: flex;
+        gap: 8px;
+        margin-right: 24px;
+      }
+      .wd-title .lights span {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+      .wd-title .qat {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        opacity: 0.95;
+      }
+      .wd-title .name {
+        flex: 1;
+        text-align: center;
+        font-weight: 500;
+      }
+      .wd-title .find {
+        width: 260px;
+        height: 24px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.18);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 10px;
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 12px;
+      }
+      .wd-tabs {
+        height: 36px;
+        background: #f3f3f3;
+        display: flex;
+        align-items: flex-end;
+        gap: 22px;
+        padding: 0 18px;
+        font-size: 13px;
+        color: #424242;
+      }
+      .wd-tabs span {
+        padding-bottom: 8px;
+      }
+      .wd-tabs span.on {
+        color: #185abd;
+        font-weight: 600;
+        border-bottom: 3px solid #185abd;
+        padding-bottom: 5px;
+      }
+      .wd-ribbon {
+        height: 92px;
+        background: #f3f3f3;
+        border-bottom: 1px solid #d6d6d6;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 0 18px;
+        font-size: 12px;
+        color: #424242;
+      }
+      .wd-box {
+        height: 26px;
+        border: 1px solid #c8c8c8;
+        border-radius: 4px;
+        background: #fff;
+        padding: 0 8px;
+        display: flex;
+        align-items: center;
+        font-size: 13px;
+      }
+      .wd-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding-right: 18px;
+        border-right: 1px solid #dcdcdc;
+      }
+      .wd-group .r {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .wd-fmt {
+        font-family: Georgia, serif;
+        font-size: 15px;
+        width: 22px;
+        text-align: center;
+      }
+      .wd-style {
+        width: 92px;
+        height: 64px;
+        border: 1px solid #d0d0d0;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 6px 8px;
+        font-size: 11px;
+      }
+      .wd-style.on {
+        border: 2px solid #185abd;
+      }
+      .wd-style big {
+        font-family: Lato, sans-serif;
+        font-size: 15px;
+      }
+      .wd-ruler {
+        position: absolute;
+        left: 300px;
+        width: 840px;
+        top: 172px;
+        height: 18px;
+        background: #fff;
+        border: 1px solid #d0d0d0;
+        font-size: 9px;
+        color: #6b6b6b;
+      }
+      .wd-ruler::before,
+      .wd-ruler::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 96px;
+        background: #e3e3e3;
+      }
+      .wd-ruler::before {
+        left: 0;
+      }
+      .wd-ruler::after {
+        right: 0;
+      }
+      .wd-ruler span {
+        position: absolute;
+        top: 3px;
+        z-index: 1;
+        transform: translateX(-50%);
+      }
+      .wd-ruler i {
+        position: absolute;
+        bottom: 2px;
+        z-index: 1;
+        width: 1px;
+        height: 4px;
+        background: #8a8a8a;
+      }
+      .wd-page {
+        position: absolute;
+        left: 300px;
+        width: 840px;
+        top: 198px;
+        height: 1000px;
+        background: #fff;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.12);
+        padding: 56px 96px;
+        font-family: "Times New Roman", serif;
+        font-size: 19px;
+        line-height: 1.5;
+        color: #000;
+      }
+      .wd-page h1 {
+        font-family: "Times New Roman", serif;
+        font-weight: 700;
+        font-size: 24px;
+        color: #000;
+        margin-bottom: 12px;
+      }
+      .wd-page .muted {
+        color: #000;
+        margin-bottom: 14px;
+      }
+      .wd-status {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 24px;
+        background: #f3f3f3;
+        border-top: 1px solid #d6d6d6;
+        font-size: 11px;
+        color: #616161;
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        padding: 0 14px;
+      }
+
+      /* ---------- Chrome ---------- */
+      #ch .app {
+        font-family: Roboto, sans-serif;
+        background: #fff;
+        color: #1f1f1f;
+      }
+      .ch-tabs {
+        height: 42px;
+        background: #dee1e6;
+        display: flex;
+        align-items: flex-end;
+        padding: 0 10px 0 86px;
+        position: relative;
+      }
+      .ch-tabs .lights {
+        position: absolute;
+        left: 14px;
+        top: 15px;
+        display: flex;
+        gap: 8px;
+      }
+      .ch-tabs .lights span {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+      .ch-tab {
+        width: 236px;
+        height: 34px;
+        border-radius: 9px 9px 0 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px;
+        font-size: 12.5px;
+        color: #3c4043;
+      }
+      .ch-tab.on {
+        background: #fff;
+      }
+      .ch-bar {
+        height: 46px;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 0 14px;
+        color: #5f6368;
+        border-bottom: 1px solid #e0e0e0;
+      }
+      .ch-omni {
+        position: absolute;
+        left: 132px;
+        right: 120px;
+        top: 47px;
+        border-radius: 20px;
+        background: #fff;
+        box-shadow: 0 2px 6px 2px rgba(60, 64, 67, 0.15), 0 1px 2px rgba(60, 64, 67, 0.3);
+        z-index: 3;
+        padding-bottom: 8px;
+      }
+      .ch-line {
+        height: 38px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 0 16px;
+        font-size: 15px;
+        color: #1f1f1f;
+        white-space: nowrap;
+      }
+      .ch-sug {
+        height: 36px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 0 16px;
+        font-size: 14px;
+        color: #1f1f1f;
+        white-space: nowrap;
+      }
+      .ch-sug.on {
+        background: #f1f3f4;
+      }
+      .ch-sug span {
+        color: #5f6368;
+      }
+      .ch-ntp {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 89px;
+        bottom: 0;
+        background: #fff;
+      }
+      .ch-tiles {
+        position: absolute;
+        left: 50%;
+        top: 380px;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 22px;
+      }
+      .ch-tiles div {
+        width: 112px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        color: #3c4043;
+      }
+      .ch-tiles i {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #f1f3f4;
+        display: grid;
+        place-items: center;
+        font-style: normal;
+        font-weight: 500;
+        color: #3c4043;
+      }
+
+      /* A Finder window left open behind Chrome. */
+      .behind {
+        position: absolute;
+        left: -160px;
+        top: -470px;
+        width: 1200px;
+        height: 520px;
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        background: #fff;
+        font: 13px "SF Pro", Inter, sans-serif;
+        color: #262626;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.22), 0 22px 60px rgba(0, 0, 0, 0.3);
+      }
+      .behind .side {
+        width: 200px;
+        padding: 52px 12px;
+        background: #f0eff0;
+        color: #555;
+        line-height: 28px;
+      }
+      .behind .side b {
+        display: block;
+        font-size: 11px;
+        color: #9a9a9a;
+        margin-top: 8px;
+      }
+      .behind .list {
+        flex: 1;
+        padding-top: 52px;
+      }
+      .behind .row {
+        display: flex;
+        height: 30px;
+        align-items: center;
+        padding: 0 18px;
+      }
+      .behind .row:nth-child(even) {
+        background: #f5f5f5;
+      }
+      .behind .row.head {
+        color: #8a8a8a;
+        font-size: 12px;
+        border-bottom: 1px solid #e5e5e5;
+        background: #fff;
+      }
+      .behind .row span:first-child {
+        flex: 1;
+      }
+      .behind .row span {
+        width: 220px;
+      }
+
+
+      /* ================= Looks: the same film in four designs (variable "look") ================= */
+
+      /* B. Studio: a light seamless ground, the window floats as a tilted card, a wider shot. */
+      /* Studio grounds (variable "ground"); each is a lit seamless backdrop, light from the top. */
+      #root.look-studio.ground-sand {
+        background: radial-gradient(90% 80% at 50% 0%, #fbf7f1 0%, #efe6da 55%, #e2d5c4 100%);
+      }
+      #root.look-studio.ground-graphite {
+        background: radial-gradient(90% 80% at 50% 0%, #4a4d55 0%, #2c2e33 55%, #1d1e22 100%);
+      }
+      #root.look-studio.ground-steppe {
+        background: linear-gradient(180deg, #7cc4e8 0%, #b9e0f2 55%, #f2e3b6 100%);
+      }
+      #root.look-studio.ground-navy {
+        background: radial-gradient(90% 80% at 50% 0%, #2a4f8f 0%, #16305e 55%, #0d1f40 100%);
+      }
+      #root.look-studio.ground-paper {
+        background: radial-gradient(90% 80% at 50% 0%, #ffffff 0%, #f3f4f6 60%, #e7e9ed 100%);
+      }
+      /* Gradient backdrops: shown only for their ground. */
+      #bg-grad {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        opacity: 0;
+      }
+      #root[class*="ground-grad-"] #bg-grad {
+        opacity: 1;
+      }
+      #root.ground-grad-dawn { --g0: #fde6dc; --g1: #ffc6a8; --g2: #f7b8d4; --g3: #c9b8f5; --g4: #ffe1b3; --g5: #fff4ec; }
+      #root.ground-grad-lagoon { --g0: #dff3fb; --g1: #9fe2f0; --g2: #8cb8ff; --g3: #6f8ff0; --g4: #b8f0dc; --g5: #f2fbff; }
+      #root.ground-grad-aurora { --g0: #e6f7ef; --g1: #a8eccd; --g2: #8fd6e8; --g3: #b39cf2; --g4: #d8f5b8; --g5: #f4fff8; }
+      #root.ground-grad-dusk { --g0: #e9e4fb; --g1: #b8a6f5; --g2: #f3a6c8; --g3: #8fa8f5; --g4: #ffc9b0; --g5: #f8f4ff; }
+      #root.look-studio[class*="ground-grad-"] {
+        background: var(--g0);
+      }
+      /* The grain layer keeps the gradient from banding once compressed. */
+      #root.look-studio {
+        background:
+          url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0.05 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+          radial-gradient(55% 60% at 12% 18%, #ffcfa8 0%, rgba(255, 207, 168, 0) 70%),
+          radial-gradient(50% 60% at 88% 16%, #a9cdff 0%, rgba(169, 205, 255, 0) 70%),
+          radial-gradient(55% 60% at 80% 88%, #d2bfff 0%, rgba(210, 191, 255, 0) 70%),
+          radial-gradient(50% 55% at 15% 90%, #b8f0d0 0%, rgba(184, 240, 208, 0) 70%),
+          #f6f2fb;
+      }
+      .look-studio .vignette {
+        display: none;
+      }
+      .look-studio .shot {
+        perspective: 2600px;
+      }
+      .look-studio .app {
+        border-radius: 18px;
+        transform: rotateY(-7deg) rotateX(4deg);
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 50px 120px rgba(20, 30, 60, 0.28), 0 12px 30px rgba(20, 30, 60, 0.12);
+      }
+      .look-studio .behind {
+        opacity: 0;
+      }
+      /* C. Night: macOS dark mode in every app. */
+      #root.look-night {
+        background:
+          radial-gradient(60% 70% at 20% 25%, #2b3a6b 0%, rgba(43, 58, 107, 0) 70%),
+          radial-gradient(55% 65% at 85% 80%, #4a2a5e 0%, rgba(74, 42, 94, 0) 70%),
+          #121626;
+      }
+      .look-night .app {
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 28px 70px rgba(0, 0, 0, 0.6);
+      }
+      .look-night .ime {
+        background: #2c2c2e;
+        color: #f2f2f7;
+        box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.15), 0 8px 24px rgba(0, 0, 0, 0.5);
+      }
+      .look-night #wa .app { color: #e9edef; background: #111b21; }
+      .look-night .wa-side { background: #111b21; border-right-color: #222d34; }
+      .look-night .wa-search { background: #202c33; color: #8696a0; }
+      .look-night .wa-chat.on { background: #2a3942; }
+      .look-night .wa-chat .meta { border-bottom-color: #222d34; }
+      .look-night .wa-chat p, .look-night .wa-chat .top span, .look-night .wa-head span { color: #8696a0; }
+      .look-night .wa-pane { background-color: #0b141a; background-image: radial-gradient(rgba(255, 255, 255, 0.035) 1.2px, transparent 1.3px); }
+      .look-night .wa-head { background: #202c33; border-bottom-color: #222d34; }
+      .look-night .wa-day { background: #182229; color: #8696a0; }
+      .look-night .wa-bub.in { background: #202c33; }
+      .look-night .wa-bub.out { background: #005c4b; }
+      .look-night .wa-bub i { color: #8696a0; }
+      .look-night .wa-bar { background: #202c33; color: #8696a0; }
+      .look-night .wa-bar svg { filter: invert(0.6); }
+      .look-night .wa-input { background: #2a3942; color: #e9edef; }
+      .look-night #gm .app { background: #111111; color: #e3e3e3; }
+      .look-night .gm-search { background: #2a2a2a; color: #c4c7c5; }
+      .look-night .gm-nav { color: #e3e3e3; }
+      .look-night .gm-compose-btn { background: #004a77; color: #c2e7ff; }
+      .look-night .gm-nav div.i.on { background: #004a77; }
+      .look-night .gm-list { background: #1e1e1e; }
+      .look-night .gm-row { border-bottom-color: #2a2a2a; }
+      .look-night .gm-row span { color: #9aa0a6; }
+      .look-night .gm-compose { background: #2b2b2b; }
+      .look-night .gm-ch { background: #3c3c3c; color: #e3e3e3; }
+      .look-night .gm-field { border-bottom-color: #444; color: #9aa0a6; }
+      .look-night .gm-field[style] { color: #e3e3e3 !important; }
+      .look-night .gm-chip { border-color: #5f6368; color: #e3e3e3; }
+      .look-night .gm-body { color: #e8eaed; }
+      .look-night .gm-foot { color: #c4c7c5; }
+      .look-night .gm-foot svg, .look-night .gm-top svg { filter: invert(0.85); }
+      .look-night .gm-send { background: #a8c7fa; color: #062e6f; }
+      .look-night #wd .app { background: #1b1b1b; color: #e6e6e6; }
+      .look-night .wd-title { background: #2b2b2b; }
+      .look-night .wd-tabs, .look-night .wd-ribbon { background: #2b2b2b; color: #d6d6d6; border-bottom-color: #3a3a3a; }
+      .look-night .wd-tabs span.on { color: #6ea8fe; border-bottom-color: #6ea8fe; }
+      .look-night .wd-box { background: #3a3a3a; border-color: #4a4a4a; color: #e6e6e6; }
+      .look-night .wd-group { border-right-color: #3a3a3a; }
+      .look-night .wd-style { background: #333; border-color: #4a4a4a; color: #d6d6d6; }
+      .look-night .wd-style.on { border-color: #6ea8fe; }
+      .look-night .wd-style big { color: #f0f0f0 !important; }
+      .look-night .wd-ruler { background: #2b2b2b; border-color: #3a3a3a; color: #9a9a9a; }
+      .look-night .wd-ruler::before, .look-night .wd-ruler::after { background: #232323; }
+      .look-night .wd-page { background: #1f1f1f; color: #f0f0f0; box-shadow: 0 0 0 1px #333; }
+      .look-night .wd-page h1 { color: #f0f0f0; }
+      .look-night .wd-page .muted { color: #f0f0f0; }
+      .look-night #ch .app { background: #202124; color: #e8eaed; }
+      .look-night .ch-tabs { background: #1f1f1f; }
+      .look-night .ch-tab { color: #bdc1c6; }
+      .look-night .ch-tab.on { background: #35363a; color: #e8eaed; }
+      .look-night .ch-bar { background: #35363a; border-bottom-color: #2a2a2a; }
+      .look-night .ch-bar svg { filter: invert(0.7); }
+      .look-night .ch-omni { background: #202124; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6); }
+      .look-night .ch-line, .look-night .ch-sug { color: #e8eaed; }
+      .look-night .ch-sug.on { background: #303134; }
+      .look-night .ch-sug span { color: #9aa0a6; }
+      .look-night .ch-omni svg { filter: invert(0.8); }
+      .look-night .ch-ntp { background: #202124; }
+      .look-night .ch-tiles div { color: #bdc1c6; }
+      .look-night .ch-tiles i { background: #35363a; color: #e8eaed; }
+      .look-night .behind { background: #1e1e1e; color: #e6e6e6; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1); }
+      .look-night .behind .side { background: #2a2a2a; color: #b0b0b0; }
+      .look-night .behind .row:nth-child(even) { background: #262626; }
+      .look-night .behind .row.head { background: #1e1e1e; border-bottom-color: #333; }
+      .look-night .vignette { background: radial-gradient(ellipse 75% 75% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.35) 100%); }
+
+      /* D. MacBook: the screen in its bezel, and the keyboard below where the keys are pressed. */
+      #laptop {
+        display: none;
+      }
+      .look-macbook #laptop {
+        display: block;
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+      }
+      #root.look-macbook {
+        background: linear-gradient(180deg, #ecebe8 0%, #e2e0dc 100%);
+      }
+      .look-macbook .shot {
+        left: 240px;
+        top: 22px;
+        right: auto;
+        bottom: auto;
+        width: 1920px;
+        height: 1080px;
+        transform: scale(0.75);
+        transform-origin: 0 0;
+        z-index: 1;
+      }
+      .look-macbook .vignette,
+      .look-macbook #keys {
+        display: none;
+      }
+      .mb-bezel {
+        position: absolute;
+        left: 222px;
+        top: 4px;
+        width: 1476px;
+        height: 846px;
+        border-radius: 28px 28px 10px 10px;
+        background: #0c0c0d;
+        box-shadow: 0 0 0 2px #a9abb0, 0 20px 50px rgba(0, 0, 0, 0.25);
+      }
+      .mb-screen {
+        position: absolute;
+        left: 240px;
+        top: 22px;
+        width: 1440px;
+        height: 810px;
+        border-radius: 8px;
+        background:
+          radial-gradient(60% 70% at 18% 22%, #f2b38f 0%, rgba(242, 179, 143, 0) 70%),
+          radial-gradient(55% 65% at 85% 80%, #6f86d6 0%, rgba(111, 134, 214, 0) 70%),
+          radial-gradient(50% 60% at 70% 15%, #c9a4d8 0%, rgba(201, 164, 216, 0) 70%),
+          #d9c7c4;
+      }
+      .mb-hinge {
+        position: absolute;
+        left: 160px;
+        top: 850px;
+        width: 1600px;
+        height: 22px;
+        border-radius: 0 0 14px 14px;
+        background: linear-gradient(180deg, #b9bbc0, #d9dbdf);
+      }
+      .mb-deck {
+        position: absolute;
+        left: 60px;
+        top: 872px;
+        width: 1800px;
+        height: 420px;
+        background: linear-gradient(180deg, #d4d6da, #c7c9ce);
+        perspective: 900px;
+      }
+      .mb-keys {
+        position: absolute;
+        left: 50%;
+        top: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+        transform: translateX(-50%) rotateX(42deg);
+        transform-origin: 50% 0;
+      }
+      .mb-row {
+        display: flex;
+        gap: 9px;
+      }
+      .mb-key {
+        position: relative;
+        width: 76px;
+        height: 72px;
+        border-radius: 9px;
+        background: #1c1c1e;
+        box-shadow: 0 2px 0 #0a0a0a, 0 3px 6px rgba(0, 0, 0, 0.25);
+        color: #f2f2f2;
+        font-family: "SF Pro", Inter, sans-serif;
+      }
+      .mb-key b {
+        position: absolute;
+        left: 10px;
+        bottom: 6px;
+        font-size: 30px;
+        font-weight: 500;
+      }
+      .mb-key i {
+        position: absolute;
+        right: 9px;
+        top: 6px;
+        font-size: 15px;
+        font-style: normal;
+        color: #a1a1a6;
+      }
+      .mb-key.wide b {
+        font-size: 17px;
+        bottom: 10px;
+      }
+      .mb-key.down {
+        background: #2c2c2e;
+        transform: translateY(4px);
+        box-shadow: 0 0 0 3px var(--accent), 0 0 18px rgba(10, 132, 255, 0.55);
+      }
+      .mb-key .kz {
+        position: absolute;
+        left: 50%;
+        top: -66px;
+        min-width: 54px;
+        height: 54px;
+        padding: 0 10px;
+        border-radius: 27px;
+        background: var(--accent);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-size: 34px;
+        font-weight: 600;
+        box-shadow: 0 6px 16px rgba(10, 132, 255, 0.45);
+      }
+
+
+      /* ================= Badges: where KazType works (variable "badges") ================= */
+      #badges {
+        position: absolute;
+        inset: 0;
+        z-index: 28;
+        pointer-events: none;
+        font-family: "SF Pro", Inter, sans-serif;
+        color: #1d1d1f;
+      }
+      #badges > div {
+        display: none;
+      }
+      #badges.headline .bd-head,
+      #badges.dock .bd-dock,
+      #badges.chips .bd-chips {
+        display: flex;
+      }
+      .bd-glass {
+        background: rgba(255, 255, 255, 0.42);
+        backdrop-filter: blur(22px) saturate(1.2);
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 14px 40px rgba(20, 30, 60, 0.16);
+      }
+      .bd-logo {
+        width: 1em;
+        height: 1em;
+        flex: none;
+      }
+
+      /* 1. Rolling headline */
+      .bd-head {
+        position: absolute;
+        left: 96px;
+        top: 64px;
+        align-items: center;
+        gap: 18px;
+        height: 104px;
+        padding: 0 36px 0 32px;
+        border-radius: 52px;
+        font-size: 50px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .bd-slot {
+        position: relative;
+        height: 104px;
+        overflow: hidden;
+      }
+      .bd-item {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 104px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        white-space: nowrap;
+      }
+      .bd-item.final {
+        color: var(--accent);
+      }
+      .bd-item .bd-logo {
+        margin-left: 4px;
+      }
+      .bd-sizer {
+        visibility: hidden;
+        height: 0;
+        overflow: hidden;
+      }
+
+      /* 2. Dock */
+      .bd-dock {
+        position: absolute;
+        left: 50%;
+        top: 40px;
+        transform: translateX(-50%);
+        flex-direction: column;
+        align-items: center;
+        gap: 18px;
+      }
+      .bd-dock-row {
+        display: flex;
+        align-items: flex-end;
+        gap: 18px;
+        padding: 12px 18px;
+        border-radius: 26px;
+      }
+      .bd-icon {
+        position: relative;
+        display: grid;
+        place-items: center;
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.85);
+        box-shadow: 0 6px 16px rgba(20, 30, 60, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+        font-size: 40px;
+        transform-origin: 50% 100%;
+      }
+      .bd-icon::after {
+        content: "";
+        position: absolute;
+        bottom: -8px;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: #1d1d1f;
+        opacity: var(--dot, 0);
+      }
+      .bd-caption {
+        height: 54px;
+        padding: 0 26px;
+        border-radius: 27px;
+        display: flex;
+        align-items: center;
+        font-size: 28px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .bd-caption b {
+        font-weight: 600;
+        color: var(--accent);
+        margin-left: 10px;
+      }
+
+      /* 3. Collected chips */
+      .bd-chips {
+        position: absolute;
+        left: 96px;
+        top: 64px;
+        align-items: center;
+        gap: 14px;
+        font-size: 36px;
+        font-weight: 600;
+      }
+      .bd-chips .lead {
+        height: 76px;
+        padding: 0 26px;
+        border-radius: 38px;
+        display: flex;
+        align-items: center;
+      }
+      .bd-chip {
+        height: 76px;
+        padding: 0 26px 0 18px;
+        border-radius: 38px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        white-space: nowrap;
+        background: #fff;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 12px 30px rgba(20, 30, 60, 0.16);
+        transform-origin: 30% 50%;
+      }
+      .bd-chip.on {
+        box-shadow: 0 0 0 3px var(--accent), 0 12px 30px rgba(10, 132, 255, 0.28);
+      }
+      .bd-chip.final {
+        background: var(--accent);
+        color: #fff;
+        padding-left: 26px;
+      }
+
+      /* Screen-recording overlays, outside the camera. */
+      .vignette {
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+        pointer-events: none;
+        background: radial-gradient(ellipse 75% 75% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.18) 100%);
+      }
+      #keys {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 54px;
+        z-index: 30;
+        display: flex;
+        justify-content: center;
+      }
+      #keys .caps {
+        display: flex;
+        gap: 8px;
+        padding: 10px;
+        border-radius: 16px;
+        background: rgba(29, 29, 31, 0.82);
+      }
+      #keys .cap {
+        display: grid;
+        place-items: center;
+        min-width: 50px;
+        height: 54px;
+        padding: 0 10px;
+        border-radius: 9px;
+        background: #3a3a3c;
+        box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.35);
+        font-family: "SF Pro", Inter, sans-serif;
+        font-size: 26px;
+        font-weight: 500;
+        color: #fff;
+      }
+      #keys .cap.down {
+        background: #5b5b5f;
+        box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+        transform: translateY(2px);
+      }
+      #keys .cap {
+        position: relative;
+      }
+      #keys .cap.turned {
+        box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.35), 0 0 0 2px var(--accent);
+      }
+      #keys .kz {
+        position: absolute;
+        top: -14px;
+        right: -12px;
+        display: grid;
+        place-items: center;
+        min-width: 30px;
+        height: 30px;
+        padding: 0 6px;
+        border-radius: 15px;
+        background: var(--accent);
+        color: #fff;
+        font-size: 20px;
+        font-weight: 600;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      }
+      #keys .caps {
+        padding-top: 16px;
+      }
+      #keys .cap.wide {
+        min-width: 120px;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-kbh8" id="root" data-composition-id="main" data-start="0" data-duration="15" data-width="1920" data-height="1080">
+      <!-- Apple-style gradient backdrop (variable "ground" = grad-*): soft colour fields, blurred, with a faint grain against banding. -->
+      <svg id="bg-grad" class="clip" data-start="0" data-duration="15" data-track-index="0" data-layout-ignore viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <filter id="grad-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="140" /></filter>
+          <filter id="grad-grain"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" /><feColorMatrix values="0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0.06 0" /></filter>
+        </defs>
+        <rect width="1920" height="1080" fill="var(--g0)" />
+        <g filter="url(#grad-soft)">
+          <ellipse cx="260" cy="180" rx="760" ry="520" fill="var(--g1)" />
+          <ellipse cx="1700" cy="220" rx="720" ry="560" fill="var(--g2)" />
+          <ellipse cx="1500" cy="980" rx="820" ry="520" fill="var(--g3)" />
+          <ellipse cx="340" cy="1000" rx="700" ry="460" fill="var(--g4)" />
+          <ellipse cx="980" cy="560" rx="520" ry="360" fill="var(--g5)" opacity="0.85" />
+        </g>
+        <rect width="1920" height="1080" filter="url(#grad-grain)" />
+      </svg>
+      <!-- The MacBook look only: bezel, screen and keyboard; keys are built and lit by the script. -->
+      <div data-hf-id="hf-i8jn" id="laptop" class="clip" data-start="0" data-duration="15" data-track-index="0" data-layout-ignore="">
+        <div data-hf-id="hf-gux2" class="mb-bezel"></div>
+        <div data-hf-id="hf-y872" class="mb-screen"></div>
+        <div data-hf-id="hf-as8j" class="mb-hinge"></div>
+        <div data-hf-id="hf-80z1" class="mb-deck"><div data-hf-id="hf-vz0y" class="mb-keys" id="mb-keys"></div></div>
+      </div>
+      <!-- Shot 1: WhatsApp, the reply field -->
+      <div data-hf-id="hf-6aqc" id="wa" class="shot clip" data-start="0" data-duration="3.533" data-track-index="1" data-track-kind="graphics">
+        <div data-hf-id="hf-ytgd" class="cam" id="wa-cam">
+          <div data-hf-id="hf-gk5l" class="app">
+            <div data-hf-id="hf-99ow" class="wa-side">
+              <h2 data-hf-id="hf-o0o4">Чаттар</h2>
+              <div data-hf-id="hf-ii32" class="wa-search">
+                <svg data-hf-id="hf-4911" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#667781" stroke-width="2.2"><circle data-hf-id="hf-r9ft" cx="11" cy="11" r="7" /><path data-hf-id="hf-8pe5" d="m20 20-3.5-3.5" /></svg>
+                Іздеу
+              </div>
+              <div data-hf-id="hf-teb2" class="wa-chat on">
+                <span data-hf-id="hf-p1nu" class="av" style="background: #d97757">А</span>
+                <div data-hf-id="hf-puvz" class="meta"><div data-hf-id="hf-vnjs" class="top">Айгерім <span data-hf-id="hf-jlxo">18:42</span></div><p data-hf-id="hf-baax">Сәлем! Демалыста не істейміз?</p></div>
+              </div>
+              <div data-hf-id="hf-xm7j" class="wa-chat">
+                <span data-hf-id="hf-po4f" class="av" style="background: #5b8def">Д</span>
+                <div data-hf-id="hf-zjfj" class="meta"><div data-hf-id="hf-qniv" class="top">Дәулет <span data-hf-id="hf-eqwc">17:10</span></div><p data-hf-id="hf-7uop">Ертең кездесеміз бе?</p></div>
+              </div>
+              <div data-hf-id="hf-8bf3" class="wa-chat">
+                <span data-hf-id="hf-ysgs" class="av" style="background: #25a36f">О</span>
+                <div data-hf-id="hf-z54i" class="meta"><div data-hf-id="hf-kf70" class="top">Отбасы <span data-hf-id="hf-1wcm">16:55</span></div><p data-hf-id="hf-rfiq">Мама: Кешкі асқа келіңдер</p></div>
+              </div>
+              <div data-hf-id="hf-7x42" class="wa-chat">
+                <span data-hf-id="hf-3gp0" class="av" style="background: #9b6bd6">Ж</span>
+                <div data-hf-id="hf-yqth" class="meta"><div data-hf-id="hf-koh8" class="top">Жұмыс чаты <span data-hf-id="hf-c4hp">15:02</span></div><p data-hf-id="hf-4rvk">Нұрлан: Есеп дайын</p></div>
+              </div>
+              <div data-hf-id="hf-7it1" class="wa-chat">
+                <span data-hf-id="hf-qmnw" class="av" style="background: #e0a43a">Б</span>
+                <div data-hf-id="hf-1iyo" class="meta"><div data-hf-id="hf-uwjn" class="top">Бауыржан <span data-hf-id="hf-r130">14:37</span></div><p data-hf-id="hf-i76z">Футбол сағат 7-де ме?</p></div>
+              </div>
+              <div data-hf-id="hf-aay8" class="wa-chat">
+                <span data-hf-id="hf-d963" class="av" style="background: #4fa3c7">М</span>
+                <div data-hf-id="hf-14nn" class="meta"><div data-hf-id="hf-euqx" class="top">Мама <span data-hf-id="hf-lkmr">13:20</span></div><p data-hf-id="hf-0zjc">Тамақ ішіп алдың ба?</p></div>
+              </div>
+              <div data-hf-id="hf-9wn7" class="wa-chat">
+                <span data-hf-id="hf-c0q0" class="av" style="background: #c75b8f">Ә</span>
+                <div data-hf-id="hf-0qcm" class="meta"><div data-hf-id="hf-0ktr" class="top">Әсем <span data-hf-id="hf-qsij">12:05</span></div><p data-hf-id="hf-lm4b">Рахмет, көріскенше!</p></div>
+              </div>
+              <div data-hf-id="hf-9ic6" class="wa-chat">
+                <span data-hf-id="hf-tlo5" class="av" style="background: #6b8e4e">Т</span>
+                <div data-hf-id="hf-0c1l" class="meta"><div data-hf-id="hf-5ttr" class="top">Топ: 11 «Ә» сынып <span data-hf-id="hf-8hlb">11:48</span></div><p data-hf-id="hf-e78y">Ерлан: Кездесуге кім барады?</p></div>
+              </div>
+              <div data-hf-id="hf-9415" class="wa-chat">
+                <span data-hf-id="hf-f1la" class="av" style="background: #8c6fd1">Н</span>
+                <div data-hf-id="hf-wrac" class="meta"><div data-hf-id="hf-q02z" class="top">Нұрлан Ахметов <span data-hf-id="hf-9n63">Кеше</span></div><p data-hf-id="hf-ib9i">Файлды жібердім</p></div>
+              </div>
+              <div data-hf-id="hf-5j9w" class="wa-chat">
+                <span data-hf-id="hf-6x95" class="av" style="background: #d0694a">А</span>
+                <div data-hf-id="hf-wczb" class="meta"><div data-hf-id="hf-d6c1" class="top">Ата <span data-hf-id="hf-xoff">Кеше</span></div><p data-hf-id="hf-xzfa">Дауыстық хабарлама (0:42)</p></div>
+              </div>
+              <div data-hf-id="hf-54yv" class="wa-chat">
+                <span data-hf-id="hf-hu8k" class="av" style="background: #3d9a8b">Д</span>
+                <div data-hf-id="hf-fchp" class="meta"><div data-hf-id="hf-ywpk" class="top">Дана <span data-hf-id="hf-fri0">Сейсенбі</span></div><p data-hf-id="hf-zxjk">Суреттерді көрдің бе?</p></div>
+              </div>
+              <div data-hf-id="hf-0p65" class="wa-chat">
+                <span data-hf-id="hf-bmbv" class="av" style="background: #b5853f">Е</span>
+                <div data-hf-id="hf-fqsq" class="meta"><div data-hf-id="hf-i2gm" class="top">Ерлан <span data-hf-id="hf-9psb">Дүйсенбі</span></div><p data-hf-id="hf-85dy">Жарайды, келісеміз</p></div>
+              </div>
+              <div data-hf-id="hf-13h6" class="wa-chat">
+                <span data-hf-id="hf-z3qe" class="av" style="background: #5e7fc9">Ү</span>
+                <div data-hf-id="hf-g53r" class="meta"><div data-hf-id="hf-lsaw" class="top">Үй иесі <span data-hf-id="hf-rrh0">Жексенбі</span></div><p data-hf-id="hf-icq2">Төлемді алдым, рахмет</p></div>
+              </div>
+              <div data-hf-id="hf-1hs7" class="wa-chat">
+                <span data-hf-id="hf-khs7" class="av" style="background: #a7579b">С</span>
+                <div data-hf-id="hf-gjes" class="meta"><div data-hf-id="hf-belo" class="top">Сәуле <span data-hf-id="hf-9vuq">19.10.2026</span></div><p data-hf-id="hf-ae62">Туған күніңмен!</p></div>
+              </div>
+              <div data-hf-id="hf-1w38" class="wa-chat">
+                <span data-hf-id="hf-mjr2" class="av" style="background: #4f9d62">Қ</span>
+                <div data-hf-id="hf-gxpt" class="meta"><div data-hf-id="hf-dv2k" class="top">Қайрат <span data-hf-id="hf-8b55">18.10.2026</span></div><p data-hf-id="hf-dw9u">Ертең хабарласамын</p></div>
+              </div>
+            </div>
+            <div data-hf-id="hf-ty9r" class="wa-pane">
+              <div data-hf-id="hf-s76r" class="wa-head">
+                <span data-hf-id="hf-j4oe" class="av" style="background: #d97757">А</span>
+                <div data-hf-id="hf-yeow"><b data-hf-id="hf-j0n8">Айгерім</b><span data-hf-id="hf-m5ki">желіде</span></div>
+              </div>
+              <div data-hf-id="hf-y28f" class="wa-msgs">
+                <span data-hf-id="hf-bhz5" class="wa-day">БҮГІН</span>
+                <div data-hf-id="hf-audx" class="wa-bub out">Демалыс жақындап қалды ғой <i data-hf-id="hf-ndc1">18:40 ✓✓</i></div>
+                <div data-hf-id="hf-hac7" class="wa-bub in">Сәлем! Демалыста не істейміз? <i data-hf-id="hf-qo6b">18:42</i></div>
+              </div>
+              <div data-hf-id="hf-itto" class="wa-bar">
+                <svg data-hf-id="hf-iiow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#54656f" stroke-width="2"><path data-hf-id="hf-1zsu" d="M12 5v14M5 12h14" /></svg>
+                <svg data-hf-id="hf-2f5n" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#54656f" stroke-width="1.8"><circle data-hf-id="hf-1iwn" cx="12" cy="12" r="9" /><path data-hf-id="hf-guxy" d="M8.5 14.5c1.8 2 5.2 2 7 0" /><circle data-hf-id="hf-zi6r" cx="9" cy="10" r="0.6" fill="#54656f" /><circle data-hf-id="hf-2kci" cx="15" cy="10" r="0.6" fill="#54656f" /></svg>
+                <div data-hf-id="hf-d6v6" class="wa-input" id="wa-field"></div>
+                <svg data-hf-id="hf-fhk9" width="24" height="24" viewBox="0 0 24 24" fill="#54656f"><path data-hf-id="hf-ck9i" d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-2.1a7 7 0 0 0 6-6.9h-2Z" /></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shot 2: Gmail, a new message -->
+      <div data-hf-id="hf-s05t" id="gm" class="shot clip" data-start="3.533" data-duration="3.837" data-track-index="1" data-track-kind="graphics">
+        <div data-hf-id="hf-k6ep" class="cam" id="gm-cam">
+          <div data-hf-id="hf-8l4t" class="app">
+            <div data-hf-id="hf-o5qi" class="gm-top">
+              <svg data-hf-id="hf-18xq" width="24" height="24" viewBox="0 0 24 24" fill="#444746"><path data-hf-id="hf-oc0y" d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z" /></svg>
+              <div data-hf-id="hf-h8gw" class="gm-search">
+                <svg data-hf-id="hf-dp7l" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#444746" stroke-width="2.2"><circle data-hf-id="hf-46f1" cx="11" cy="11" r="7" /><path data-hf-id="hf-mp4x" d="m20 20-3.5-3.5" /></svg>
+                Поштадан іздеу
+              </div>
+            </div>
+            <div data-hf-id="hf-3ke0" class="gm-nav">
+              <div data-hf-id="hf-3ruc" class="gm-compose-btn">
+                <svg data-hf-id="hf-7z3i" width="22" height="22" viewBox="0 0 24 24" fill="#1f1f1f"><path data-hf-id="hf-rcec" d="M3 17.3V21h3.7l11-11-3.7-3.7-11 11ZM20.7 7a1 1 0 0 0 0-1.4l-2.3-2.3a1 1 0 0 0-1.4 0l-1.8 1.8 3.7 3.7L20.7 7Z" /></svg>
+                Жазу
+              </div>
+              <div data-hf-id="hf-jt0l" class="i on">Кіріс <span data-hf-id="hf-kpuv">24</span></div>
+              <div data-hf-id="hf-yn8j" class="i">Жұлдызшалы</div>
+              <div data-hf-id="hf-beir" class="i">Кейінге қалдырылған</div>
+              <div data-hf-id="hf-0ozl" class="i">Жіберілген</div>
+              <div data-hf-id="hf-mqgt" class="i">Жоба хаттар <span data-hf-id="hf-ikog">1</span></div>
+            </div>
+            <div data-hf-id="hf-5sq5" class="gm-list">
+              <div data-hf-id="hf-w7l3" class="gm-row"><b data-hf-id="hf-p6go">Kaspi.kz</b><span data-hf-id="hf-f1h5">Төлем сәтті өтті — 12 500 ₸</span></div>
+              <div data-hf-id="hf-kdtz" class="gm-row"><b data-hf-id="hf-1qu1">Әсем Нұрланқызы</b><span data-hf-id="hf-2qfo">Ертеңгі кездесу туралы — Сағат 10:00-де кеңсеге келіңіз</span></div>
+              <div data-hf-id="hf-6y9t" class="gm-row read"><b data-hf-id="hf-4etv">Дәулет</b><span data-hf-id="hf-43pc">Фотолар — Кеше түсірілген суреттерді жібердім</span></div>
+              <div data-hf-id="hf-s5cl" class="gm-row read"><b data-hf-id="hf-3nc3">Air Astana</b><span data-hf-id="hf-goqr">Билетіңіз расталды: Алматы — Астана</span></div>
+              <div data-hf-id="hf-tc9o" class="gm-row read"><b data-hf-id="hf-g4ts">Отбасы</b><span data-hf-id="hf-1di9">Наурыз мерекесі — Барлығын шақырамыз</span></div>
+              <div data-hf-id="hf-sxyn" class="gm-row read"><b data-hf-id="hf-sqh3">Нұрлан Ахметов</b><span data-hf-id="hf-s8mn">Есеп — Тоқсандық есептің соңғы нұсқасы</span></div>
+            </div>
+            <div data-hf-id="hf-e1yj" class="gm-compose">
+              <div data-hf-id="hf-yjro" class="gm-ch">Жаңа хат <span data-hf-id="hf-wq5j" style="letter-spacing: 10px">– ⤢ ✕</span></div>
+              <div data-hf-id="hf-9ldd" class="gm-field">Кімге <span data-hf-id="hf-891a" class="gm-chip"><span data-hf-id="hf-jizf" class="av" style="background: #d97757">А</span>Айгерім Сейітова</span></div>
+              <div data-hf-id="hf-kshy" class="gm-field" style="color: #1f1f1f">Демалыс</div>
+              <div data-hf-id="hf-lvu8" class="gm-body" id="gm-field"></div>
+              <div data-hf-id="hf-rql9" class="gm-foot">
+                <span data-hf-id="hf-b5wv" class="gm-send">Жіберу</span>
+                <svg data-hf-id="hf-cnj2" width="20" height="20" viewBox="0 0 24 24" fill="#444746"><path data-hf-id="hf-uz42" d="M5 4v3h5.5v12h3V7H19V4z" /></svg>
+                <svg data-hf-id="hf-wql1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#444746" stroke-width="2"><path data-hf-id="hf-2xt9" d="M16.5 6.5 8 15a2.1 2.1 0 0 0 3 3l9-9a4 4 0 0 0-5.7-5.7l-9 9a6 6 0 0 0 8.5 8.5L20 13" /></svg>
+                <svg data-hf-id="hf-olda" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#444746" stroke-width="1.8"><circle data-hf-id="hf-q513" cx="12" cy="12" r="9" /><path data-hf-id="hf-6hbe" d="M8.5 14.5c1.8 2 5.2 2 7 0" /></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shot 3: Word, a letter -->
+      <div data-hf-id="hf-311h" id="wd" class="shot clip" data-start="7.37" data-duration="3.749" data-track-index="1" data-track-kind="graphics">
+        <div data-hf-id="hf-y1q8" class="cam" id="wd-cam">
+          <div data-hf-id="hf-9s1w" class="app">
+            <div data-hf-id="hf-t3w4" class="wd-title">
+              <span data-hf-id="hf-42yy" class="lights"><span data-hf-id="hf-lgyk" style="background: #ff5f57"></span><span data-hf-id="hf-g82w" style="background: #febc2e"></span><span data-hf-id="hf-7lcq" style="background: #28c840"></span></span>
+              <span data-hf-id="hf-c711" class="qat">
+                <svg data-hf-id="hf-34se" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path data-hf-id="hf-prg2" d="M5 3h11l3 3v15H5z" /><path data-hf-id="hf-ymsy" d="M8 3v6h8V3M8 21v-7h8v7" /></svg>
+                <svg data-hf-id="hf-z6xu" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path data-hf-id="hf-u8ox" d="M9 14 4 9l5-5" /><path data-hf-id="hf-lchm" d="M4 9h10a6 6 0 0 1 0 12h-3" /></svg>
+                <svg data-hf-id="hf-qwye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2"><path data-hf-id="hf-dtsv" d="m15 14 5-5-5-5" /><path data-hf-id="hf-6oju" d="M20 9H10a6 6 0 0 0 0 12h3" /></svg>
+              </span>
+              <span data-hf-id="hf-lxwl" class="name">Жексенбі.docx — Сақталды</span>
+              <span data-hf-id="hf-jfpx" class="find"><svg data-hf-id="hf-efu4" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><circle data-hf-id="hf-5dc4" cx="11" cy="11" r="7" /><path data-hf-id="hf-nw20" d="m20 20-3.5-3.5" /></svg>Құжаттан іздеу</span>
+            </div>
+            <div data-hf-id="hf-impm" class="wd-tabs">
+              <span data-hf-id="hf-u2lt" class="on">Басты бет</span><span data-hf-id="hf-uucz">Кірістіру</span><span data-hf-id="hf-3jnn">Сызу</span><span data-hf-id="hf-36lw">Дизайн</span><span data-hf-id="hf-q5m6">Макет</span><span data-hf-id="hf-xcuv">Сілтемелер</span><span data-hf-id="hf-uc2m">Таратылым</span><span data-hf-id="hf-ojje">Рецензиялау</span><span data-hf-id="hf-4i2g">Көрініс</span>
+            </div>
+            <div data-hf-id="hf-fyaa" class="wd-ribbon">
+              <div data-hf-id="hf-p6b3" class="wd-group">
+                <div data-hf-id="hf-1rbm" class="r"><span data-hf-id="hf-s205" class="wd-box" style="width: 170px; font-family: 'Times New Roman', serif; font-size: 14px">Times New Roman</span><span data-hf-id="hf-b2v9" class="wd-box" style="width: 48px">12</span></div>
+                <div data-hf-id="hf-nr2u" class="r"><span data-hf-id="hf-xqbm" class="wd-fmt"><b data-hf-id="hf-pnk9">Ж</b></span><span data-hf-id="hf-ctt2" class="wd-fmt"><i data-hf-id="hf-qc0i">К</i></span><span data-hf-id="hf-v7tg" class="wd-fmt" style="text-decoration: underline">А</span><span data-hf-id="hf-swhm" class="wd-fmt" style="text-decoration: line-through">abc</span></div>
+              </div>
+              <div data-hf-id="hf-39zj" class="wd-group">
+                <div data-hf-id="hf-a7wi" class="r">≡ &#160; ☰ &#160; ⋮≡</div>
+                <div data-hf-id="hf-ygq9" class="r">⫷ &#160; ⫸ &#160; ¶</div>
+              </div>
+              <span data-hf-id="hf-t7ez" class="wd-style on"><big data-hf-id="hf-dbjg" style="font-family: 'Times New Roman', serif">АаБбВв</big>Қалыпты</span>
+              <span data-hf-id="hf-auaw" class="wd-style"><big data-hf-id="hf-bzg3" style="font-weight: 700">АаБбВв</big>Аралықсыз</span>
+              <span data-hf-id="hf-fzp5" class="wd-style"><big data-hf-id="hf-zw8e" style="color: #0f4761; font-size: 17px">АаБбВ</big>Тақырып 1</span>
+              <span data-hf-id="hf-h6m8" class="wd-style"><big data-hf-id="hf-q6x6" style="color: #0f4761">АаБбВв</big>Тақырып 2</span>
+            </div>
+            <div data-hf-id="hf-ik9u" class="wd-ruler" id="wd-ruler"></div>
+            <div data-hf-id="hf-ghjn" class="wd-page">
+              <h1 data-hf-id="hf-96bt">Жексенбіге жоспар</h1>
+              <p data-hf-id="hf-vosb" class="muted">Достар,</p>
+              <p data-hf-id="hf-7k2a" id="wd-field"></p>
+            </div>
+            <div data-hf-id="hf-9wdo" class="wd-status"><span data-hf-id="hf-h4k6">1 / 1 бет</span><span data-hf-id="hf-q243">9 сөз</span><span data-hf-id="hf-ehtu">Қазақ тілі</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shot 4: Chrome, the address bar -->
+      <div data-hf-id="hf-54ak" id="ch" class="shot clip" data-start="11.119" data-duration="3.881" data-track-index="1" data-track-kind="graphics">
+        <div data-hf-id="hf-ykp4" class="cam" id="ch-cam">
+          <div data-hf-id="hf-yiv8" class="behind">
+            <div data-hf-id="hf-2jq0" class="side"><b data-hf-id="hf-yij8">Таңдаулылар</b>AirDrop<br data-hf-id="hf-x5px">Соңғылар<br data-hf-id="hf-rsrt">Қолданбалар<br data-hf-id="hf-szow">Жұмыс үстелі<br data-hf-id="hf-sldv">Құжаттар<br data-hf-id="hf-qluq">Жүктеулер</div>
+            <div data-hf-id="hf-33o8" class="list">
+              <div data-hf-id="hf-w11e" class="row head"><span data-hf-id="hf-qqg8">Аты</span><span data-hf-id="hf-xpsw">Өзгертілген күні</span><span data-hf-id="hf-yx6d">Өлшемі</span></div>
+              <div data-hf-id="hf-thy4" class="row"><span data-hf-id="hf-i0tk">Жексенбі.docx</span><span data-hf-id="hf-3z5y">Бүгін, 18:51</span><span data-hf-id="hf-gy38">24 КБ</span></div>
+              <div data-hf-id="hf-lt04" class="row"><span data-hf-id="hf-xj4n">Демалыс суреттері</span><span data-hf-id="hf-rudg">Кеше, 21:04</span><span data-hf-id="hf-afe3">--</span></div>
+              <div data-hf-id="hf-km31" class="row"><span data-hf-id="hf-1qd3">Есеп_2026.xlsx</span><span data-hf-id="hf-n5pj">20 қаз. 2026</span><span data-hf-id="hf-eyjl">148 КБ</span></div>
+              <div data-hf-id="hf-l0e2" class="row"><span data-hf-id="hf-8khs">Түйіндеме.pdf</span><span data-hf-id="hf-o2mc">14 қаз. 2026</span><span data-hf-id="hf-h7p6">312 КБ</span></div>
+              <div data-hf-id="hf-mzx7" class="row"><span data-hf-id="hf-mj9o">Билет Алматы — Астана.pdf</span><span data-hf-id="hf-xs88">9 қаз. 2026</span><span data-hf-id="hf-yb6f">96 КБ</span></div>
+              <div data-hf-id="hf-ne88" class="row"><span data-hf-id="hf-00l3">Наурыз_шақыру.pages</span><span data-hf-id="hf-26yt">2 қаз. 2026</span><span data-hf-id="hf-eusd">1,2 МБ</span></div>
+              <div data-hf-id="hf-m7b5" class="row"><span data-hf-id="hf-f1hu">Скриншот 2026-09-30.png</span><span data-hf-id="hf-chs6">30 қырк. 2026</span><span data-hf-id="hf-947o">2,4 МБ</span></div>
+              <div data-hf-id="hf-mlm6" class="row"><span data-hf-id="hf-3ulb">Тапсырмалар.txt</span><span data-hf-id="hf-ly2l">28 қырк. 2026</span><span data-hf-id="hf-byos">4 КБ</span></div>
+              <div data-hf-id="hf-ol5b" class="row"><span data-hf-id="hf-qtke">Видео_тау.mov</span><span data-hf-id="hf-t3t8">21 қырк. 2026</span><span data-hf-id="hf-c6hf">184 МБ</span></div>
+              <div data-hf-id="hf-ozgc" class="row"><span data-hf-id="hf-tpwh">Шарт_жалға_алу.pdf</span><span data-hf-id="hf-lzzl">15 қырк. 2026</span><span data-hf-id="hf-3mkl">540 КБ</span></div>
+              <div data-hf-id="hf-oq7g" class="row"><span data-hf-id="hf-a1hw">Музыка</span><span data-hf-id="hf-vj6a">3 қырк. 2026</span><span data-hf-id="hf-a5or">--</span></div>
+              <div data-hf-id="hf-obwf" class="row"><span data-hf-id="hf-8rg7">Қаражат_жоспары.numbers</span><span data-hf-id="hf-l0sk">1 қырк. 2026</span><span data-hf-id="hf-0xae">88 КБ</span></div>
+              <div data-hf-id="hf-nxle" class="row"><span data-hf-id="hf-5axr">Сабақ_кестесі.pdf</span><span data-hf-id="hf-t4vh">28 там. 2026</span><span data-hf-id="hf-os01">76 КБ</span></div>
+            </div>
+          </div>
+          <div data-hf-id="hf-9dqv" class="app">
+            <div data-hf-id="hf-7nre" class="ch-tabs">
+              <span data-hf-id="hf-atou" class="lights"><span data-hf-id="hf-j6s4" style="background: #ff5f57"></span><span data-hf-id="hf-enkw" style="background: #febc2e"></span><span data-hf-id="hf-0npa" style="background: #28c840"></span></span>
+              <div data-hf-id="hf-k15z" class="ch-tab">2ГИС — Алматы</div>
+              <div data-hf-id="hf-5dk2" class="ch-tab on">Жаңа қойынды <span data-hf-id="hf-vk3y" style="margin-left: auto">✕</span></div>
+              <div data-hf-id="hf-2pcp" class="ch-tab">Kolesa.kz</div>
+            </div>
+            <div data-hf-id="hf-4q3d" class="ch-bar">
+              <svg data-hf-id="hf-2hu2" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="2"><path data-hf-id="hf-ru4s" d="M19 12H5m6-6-6 6 6 6" /></svg>
+              <svg data-hf-id="hf-vn47" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c4c7c5" stroke-width="2"><path data-hf-id="hf-fjxu" d="M5 12h14m-6-6 6 6-6 6" /></svg>
+              <svg data-hf-id="hf-odqm" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="2"><path data-hf-id="hf-4grp" d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" /></svg>
+            </div>
+            <div data-hf-id="hf-4kox" class="ch-omni">
+              <div data-hf-id="hf-5q34" class="ch-line">
+                <svg data-hf-id="hf-2kq8" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="2.2"><circle data-hf-id="hf-4z13" cx="11" cy="11" r="7" /><path data-hf-id="hf-nhqz" d="m20 20-3.5-3.5" /></svg>
+                <span data-hf-id="hf-4g8w" id="ch-field"></span>
+              </div>
+              <div data-hf-id="hf-e6ao" class="ch-sug on">
+                <svg data-hf-id="hf-qyiw" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="2.2"><circle data-hf-id="hf-65y6" cx="11" cy="11" r="7" /><path data-hf-id="hf-li7u" d="m20 20-3.5-3.5" /></svg>
+                <b data-hf-id="hf-a8az" id="ch-sug" style="font-weight: 400"></b><span data-hf-id="hf-vlpe">— Іздеу</span>
+              </div>
+              <div data-hf-id="hf-ba4e" class="ch-sug">
+                <svg data-hf-id="hf-rs6s" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="2"><circle data-hf-id="hf-pqq2" cx="12" cy="12" r="9" /><path data-hf-id="hf-zcgb" d="M12 7v5l3 2" /></svg>
+                жексенбі күнгі ауа райы Алматы
+              </div>
+              <div data-hf-id="hf-n61y" class="ch-sug">
+                <svg data-hf-id="hf-tevg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="2"><circle data-hf-id="hf-pcf1" cx="12" cy="12" r="9" /><path data-hf-id="hf-3gob" d="M12 7v5l3 2" /></svg>
+                Медеу Шымбұлақ тауға шығу маршруты
+              </div>
+            </div>
+            <div data-hf-id="hf-mts0" class="ch-ntp">
+              <div data-hf-id="hf-da3x" class="ch-tiles">
+                <div data-hf-id="hf-n5yk"><i data-hf-id="hf-8psa">2</i>2ГИС</div>
+                <div data-hf-id="hf-sv7t"><i data-hf-id="hf-yxn9">K</i>Kaspi.kz</div>
+                <div data-hf-id="hf-0okp"><i data-hf-id="hf-p53f">Е</i>eGov</div>
+                <div data-hf-id="hf-y6xs"><i data-hf-id="hf-m8zt">K</i>Kolesa.kz</div>
+                <div data-hf-id="hf-4n9c"><i data-hf-id="hf-5511">+</i>Қосу</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div data-hf-id="hf-4h0o" id="badges" class="clip" data-start="0" data-duration="15" data-track-index="4" data-layout-allow-overlap="" data-layout-allow-occlusion="">
+        <div data-hf-id="hf-0z8a" class="bd-head bd-glass">
+          <span data-hf-id="hf-he6d" class="bd-slot" id="bd-slot"></span>
+        </div>
+        <div data-hf-id="hf-k6gi" class="bd-dock">
+          <div data-hf-id="hf-pwpx" class="bd-dock-row bd-glass" id="bd-dock-row"></div>
+          <div data-hf-id="hf-6smt" class="bd-caption bd-glass" id="bd-caption"></div>
+        </div>
+        <div data-hf-id="hf-7pa2" class="bd-chips" id="bd-chips"></div>
+      </div>
+      <div data-hf-id="hf-uxed" id="vignette" class="vignette clip" data-start="0" data-duration="15" data-track-index="2" data-layout-ignore=""></div>
+      <div data-hf-id="hf-tke5" id="keys" class="clip" data-start="0" data-duration="15" data-track-index="3"><div data-hf-id="hf-16i6" class="caps" id="caps"></div></div>
+    </div>
+
+    <script>
+      const DATA = window.KAZ_TYPING
+      const KEYS = DATA.keys
+
+      // The camera on each app: [app x, app y] of the point to hold at [screen x, screen y], and the scale.
+      // Each app's camera scale brings its body text to about 37 px. The caret is held at ANCHOR in every shot.
+      const SHOTS = [
+        { id: "wa", start: 0, end: 3.533, scale: 2.5, up: false },
+        { id: "gm", start: 3.533, end: 7.37, scale: 2.65, up: false },
+        { id: "wd", start: 7.37, end: 11.119, scale: 1.95, up: false },
+        { id: "ch", start: 11.119, end: 15, scale: 2.5, up: false },
+      ]
+      const ANCHOR = [1250, 660]
+      const FOLLOW = 0.22 // seconds the caret's own move takes after a keystroke
+      const GLIDE = 0.45 // the camera follows the caret averaged over this window, so it glides instead of stepping
+      const SETTLE = 0.6 // each app comes in on a keystroke a touch large and settles, gently
+      const SETTLE_FROM = 0.018
+      const PUSH = 0.02 // slow push over a shot
+
+      const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;")
+
+      function stateAt(t) {
+        let s = null
+        for (const k of KEYS) {
+          if (k.t <= t) s = k
+          else break
+        }
+        return s
+      }
+
+      // The field's contents at time t: committed text, the composing word with its candidates, the caret.
+      // The raw keys and what is shown after each key line up letter for letter, so a letter
+      // that differs is one KazType turned Kazakh. SINCE[k][j]: when letter j last turned Kazakh, as of key k.
+      const RAW = DATA.typed
+      const SHOWN = KEYS.map((k) => k.text + (k.typed ? k.candidates[0] : ""))
+      const SINCE = []
+      KEYS.forEach((k, i) => {
+        const prev = i ? SHOWN[i - 1] : ""
+        const before = i ? SINCE[i - 1] : []
+        SINCE.push([...SHOWN[i]].map((c, j) => (c === RAW[j] ? null : prev[j] === c && before[j] != null ? before[j] : k.t)))
+      })
+
+      // A letter turning Kazakh: the Russian letter flips away, the Kazakh one flips in with a pop,
+      // holds in the accent, then settles to the app's ink.
+      const FLIP = 0.6
+      const HOLD = 1.0
+      const FADE = 0.4
+      function letterHTML(c, j, since, t) {
+        if (since == null) return esc(c)
+        const a = t - since
+        if (a >= HOLD + FADE) return esc(c)
+        const mix = a < HOLD ? 100 : Math.round(100 * (1 - (a - HOLD) / FADE))
+        const color = `color:color-mix(in srgb, var(--accent) ${mix}%, currentColor)`
+        if (a >= FLIP) return `<span style="${color}">${esc(c)}</span>`
+        const half = FLIP / 2
+        const first = a < half
+        const p = first ? a / half : (a - half) / half
+        const rot = first ? 90 * p : -90 * (1 - p)
+        const scale = first ? 1 : 1.4 - 0.4 * p
+        return `<span style="display:inline-block;${color};transform:rotateX(${rot.toFixed(1)}deg) scale(${scale.toFixed(3)})">${esc(first ? RAW[j] : c)}</span>`
+      }
+
+      function lettersHTML(str, from, since, t) {
+        return [...str].map((c, n) => letterHTML(c, from + n, since[from + n], t)).join("")
+      }
+
+      function fieldHTML(s, t, up) {
+        const since = s ? SINCE[KEYS.indexOf(s)] : []
+        let h = s ? lettersHTML(s.text, 0, since, t) : ""
+        if (s && s.typed) {
+          const c = s.candidates
+          const panel =
+            c.length > 1
+              ? `<span class="ime${up ? " up" : ""}" data-layout-allow-occlusion data-layout-allow-overlap>${c.map((x, i) => `<span class="row${i === 0 ? " sel" : ""}"><b>${i + 1}</b>${esc(x)}</span>`).join("")}</span>`
+              : ""
+          h += `<span class="mk">${lettersHTML(c[0], s.text.length, since, t)}${panel}</span>`
+        }
+        const sinceKey = s ? t - s.t : 99
+        const on = sinceKey < 0.5 || Math.floor(t / 0.53) % 2 === 0
+        return h + `<span class="caret" style="opacity:${on ? 1 : 0}"></span>`
+      }
+
+      // The keystroke overlay: the raw Russian keys of the word in progress, or the last word typed.
+      function capsHTML(t) {
+        let i = -1
+        for (let j = 0; j < KEYS.length; j++) if (KEYS[j].t <= t) i = j
+        if (i < 0) return ""
+        let end = i
+        while (end >= 0 && !KEYS[end].typed) end--
+        if (end < 0) return ""
+        let start = end
+        while (start > 0 && KEYS[start - 1].typed) start--
+        const down = t - KEYS[i].t < 0.11
+        const caps = []
+        for (let j = start; j <= end; j++) {
+          // A key whose letter came out Kazakh wears that letter as a badge.
+          const since = SINCE[i][j]
+          let badge = ""
+          if (since != null) {
+            const pop = Math.min(1, (t - since) / 0.2)
+            badge = `<span class="kz" style="transform:scale(${(1.5 - 0.5 * pop).toFixed(3)})">${esc(SHOWN[i][j].toLowerCase())}</span>`
+          }
+          caps.push(`<span class="cap${down && j === i ? " down" : ""}${badge ? " turned" : ""}">${esc(KEYS[j].key.toUpperCase())}${badge}</span>`)
+        }
+        // A word ending: show the key that committed it.
+        if (i > end && KEYS[i].key) {
+          const k = KEYS[i].key === " " ? "␣" : KEYS[i].key
+          caps.push(`<span class="cap${KEYS[i].key === " " ? " wide" : ""}${down ? " down" : ""}">${esc(k)}</span>`)
+        }
+        return caps.join("")
+      }
+
+      // Word's ruler: a number every inch, a tick every quarter, the margins in grey.
+      {
+        const ruler = document.getElementById("wd-ruler")
+        let h = ""
+        for (let q = 1; q < 35; q++) {
+          const x = q * 24
+          h += q % 4 === 0 ? `<span style="left:${x}px">${q / 4}</span>` : `<i style="left:${x}px;height:${q % 2 ? 3 : 5}px"></i>`
+        }
+        ruler.innerHTML = h
+      }
+
+      const fields = SHOTS.map((s) => document.getElementById(s.id + "-field"))
+      const chSug = document.getElementById("ch-sug")
+      const caps = document.getElementById("caps")
+      const last = { fields: [], caps: null, sug: "" }
+
+      function renderAt(t) {
+        const s = stateAt(t)
+        SHOTS.forEach((shot, i) => {
+          const h = fieldHTML(s, t, shot.up)
+          if (last.fields[i] !== h) {
+            fields[i].innerHTML = h
+            last.fields[i] = h
+          }
+        })
+        const sug = s ? esc(s.text + (s.typed ? s.candidates[0] : "")) : ""
+        if (sug !== last.sug) {
+          chSug.innerHTML = sug
+          last.sug = sug
+        }
+        const c = capsHTML(t)
+        if (c !== last.caps) {
+          caps.innerHTML = c
+          caps.style.visibility = c ? "visible" : "hidden"
+          last.caps = c
+        }
+      }
+
+      // Where the caret sits in each app, in the app's own pixels, for every keystroke. Measured once, before the timeline.
+      function measureCarets() {
+        return SHOTS.map((shot, i) => {
+          const el = document.getElementById(shot.id)
+          const saved = el.getAttribute("style")
+          el.style.display = "block"
+          el.style.visibility = "visible"
+          const app = el.querySelector(".app")
+          const at = (state) => {
+            fields[i].innerHTML = fieldHTML(state, state ? state.t + 5 : 0, shot.up)
+            const c = fields[i].querySelector(".caret").getBoundingClientRect()
+            const a = app.getBoundingClientRect()
+            return [c.left - a.left, (c.top + c.bottom) / 2 - a.top]
+          }
+          const carets = [at(null), ...KEYS.map(at)]
+          if (saved === null) el.removeAttribute("style")
+          else el.setAttribute("style", saved)
+          fields[i].innerHTML = ""
+          return carets
+        })
+      }
+
+      const ease = (k) => 1 - Math.pow(1 - Math.min(1, Math.max(0, k)), 3)
+
+      // The camera for shot i at time t: the caret pinned to ANCHOR, following each keystroke over FOLLOW seconds.
+      function caretAt(i, t, carets) {
+        let k = -1
+        for (let j = 0; j < KEYS.length; j++) if (KEYS[j].t <= t) k = j
+        const now = carets[i][k + 1]
+        const before = carets[i][Math.max(0, k)]
+        const f = k < 0 ? 1 : ease((t - KEYS[k].t) / FOLLOW)
+        return [before[0] + (now[0] - before[0]) * f, before[1] + (now[1] - before[1]) * f]
+      }
+
+      const clamp01 = (x) => Math.min(1, Math.max(0, x))
+
+      function placeCamera(i, t, carets) {
+        const shot = SHOTS[i]
+        let cx = 0
+        let cy = 0
+        const n = 16
+        for (let s = 0; s < n; s++) {
+          const [x, y] = caretAt(i, t - (GLIDE * s) / (n - 1), carets)
+          cx += x / n
+          cy += y / n
+        }
+        const push = PUSH * clamp01((t - shot.start) / (shot.end - shot.start))
+        const settle = SETTLE_FROM * (1 - easeOut((t - shot.start) / SETTLE))
+        const scale = shot.scale * LOOK_SCALE * (1 + push + settle)
+        // Once the sentence has landed, the last shot eases the finished line to the centre, under the badges.
+        let [ax, ay] = ANCHOR
+        if (i === SHOTS.length - 1 && t > FINAL_T) {
+          const f = easeInOut(clamp01((t - FINAL_T) / 1.0))
+          const width = (carets[i][carets[i].length - 1][0] - carets[i][0][0]) * scale
+          ax += (960 + width / 2 - ax) * f
+          ay += (600 - ay) * f
+        }
+        cams[i].style.transform = `translate(${ax - cx * scale}px, ${ay - cy * scale}px) scale(${scale})`
+      }
+
+
+      // The look this render uses ("look" variable) and what it changes in the camera.
+      const LOOK = ((window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {}).look || "desktop"
+      const LOOK_SCALE = { studio: 0.8 }[LOOK] || 1
+      const GROUND = ((window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {}).ground || "sand"
+
+      // MacBook keyboard, Russian layout with the Latin letters small, as sold in Kazakhstan.
+      const MB_ROWS = [
+        ["ё`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "="],
+        ["йq", "цw", "уe", "кr", "еt", "нy", "гu", "шi", "щo", "зp", "х[", "ъ]"],
+        ["фa", "ыs", "вd", "аf", "пg", "рh", "оj", "лk", "дl", "ж;", "э'"],
+        ["яz", "чx", "сc", "мv", "иb", "тn", "ьm", "б,", "ю."],
+        ["␣"],
+      ]
+      const mbKeys = {}
+      function buildKeyboard() {
+        const host = document.getElementById("mb-keys")
+        host.innerHTML = MB_ROWS.map((row, r) =>
+          `<div class="mb-row" style="padding-left:${[0, 40, 60, 100, 300][r]}px">` +
+          row.map((k) => {
+            if (k === "␣") return `<span class="mb-key wide" data-k=" " style="width:520px"><b></b></span>`
+            const ru = k[0]
+            return `<span class="mb-key" data-k="${ru}"><b>${ru.toUpperCase()}</b>${k[1] ? `<i>${k[1].toUpperCase()}</i>` : ""}</span>`
+          }).join("") + `</div>`,
+        ).join("")
+        host.querySelectorAll(".mb-key").forEach((el) => (mbKeys[el.dataset.k] = el))
+      }
+
+      // Lights the key just pressed, and badges the key whose letter just turned Kazakh.
+      const mbLast = { down: null, badge: "" }
+      function renderKeyboard(t) {
+        let i = -1
+        for (let j = 0; j < KEYS.length; j++) if (KEYS[j].t <= t) i = j
+        const down = i >= 0 && t - KEYS[i].t < 0.14 ? KEYS[i].key.toLowerCase() : null
+        if (down !== mbLast.down) {
+          if (mbLast.down && mbKeys[mbLast.down]) mbKeys[mbLast.down].classList.remove("down")
+          if (down && mbKeys[down]) mbKeys[down].classList.add("down")
+          mbLast.down = down
+        }
+        let badge = ""
+        if (i >= 0) {
+          SINCE[i].forEach((since, j) => {
+            if (since == null) return
+            const a = t - since
+            if (a >= 0 && a < 0.9) badge = `${RAW[j].toLowerCase()}|${SHOWN[i][j].toLowerCase()}|${a.toFixed(2)}`
+          })
+        }
+        if (badge !== mbLast.badge) {
+          document.querySelectorAll(".mb-key .kz").forEach((el) => el.remove())
+          if (badge) {
+            const [key, kz, age] = badge.split("|")
+            const a = +age
+            const pop = Math.min(1, a / 0.18)
+            const fade = a > 0.65 ? 1 - (a - 0.65) / 0.25 : 1
+            const el = mbKeys[key]
+            if (el) el.insertAdjacentHTML("beforeend", `<span class="kz" style="opacity:${fade.toFixed(2)};transform:translateX(-50%) translateY(${(10 * (1 - pop)).toFixed(1)}px) scale(${(0.6 + 0.4 * pop).toFixed(3)})">${esc(kz)}</span>`)
+          }
+          mbLast.badge = badge
+        }
+      }
+
+
+      // ---------- Badges: where KazType works ----------
+      const VARS = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {}
+      const BADGES = VARS.badges || "headline"
+      const WORKS_IN = VARS["works-in"] || "Works in"
+      const EVERYWHERE = VARS.everywhere || "and everywhere you need"
+      const EVERYWHERE_LINE = VARS["everywhere-line"] || "Works everywhere you need"
+      const APPS = [
+        { name: "WhatsApp", logo: "assets/logos/whatsapp.svg" },
+        { name: "Gmail", logo: "assets/logos/gmail.svg" },
+        { name: "Word", logo: "assets/logos/word.svg" },
+        { name: "Chrome", logo: "assets/logos/chrome.svg" },
+      ]
+      const FINAL_T = 13.9 // the sentence has landed: the badges widen to "everywhere"
+      const ROLL = 0.4
+      const easeOut = (k) => 1 - Math.pow(1 - clamp01(k), 3)
+      const easeInOut = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2)
+      const logoImg = (a) => `<img class="bd-logo" src="${a.logo}" alt="" />`
+      // Badge moments: each app from its cut, then the final line.
+      const MOMENTS = [...SHOTS.map((s) => s.start), FINAL_T]
+      const momentAt = (t) => MOMENTS.reduce((k, m, i) => (t >= m ? i : k), 0)
+
+      const badgeEls = {}
+      function buildBadges() {
+        const root = document.getElementById("badges")
+        root.className = "clip " + BADGES
+        // The whole line rolls, so the last one can say "Works everywhere you need" in one piece.
+        document.getElementById("bd-slot").innerHTML =
+          APPS.map((a, i) => `<span class="bd-item" data-i="${i}">${esc(WORKS_IN)} ${logoImg(a)}${a.name}</span>`).join("") +
+          `<span class="bd-item final" data-i="4">${esc(EVERYWHERE_LINE)}</span>`
+        badgeEls.items = [...document.querySelectorAll("#bd-slot .bd-item")]
+        const slot = document.getElementById("bd-slot")
+        slot.style.width = Math.max(...badgeEls.items.map((el) => el.offsetWidth)) + "px"
+        document.getElementById("bd-dock-row").innerHTML = APPS.map((a) => `<span class="bd-icon">${logoImg(a)}</span>`).join("")
+        badgeEls.icons = [...document.querySelectorAll(".bd-icon")]
+        badgeEls.caption = document.getElementById("bd-caption")
+        document.getElementById("bd-chips").innerHTML =
+          `<span class="lead bd-glass">${esc(WORKS_IN)}</span>` +
+          APPS.map((a) => `<span class="bd-chip">${logoImg(a)}${a.name}</span>`).join("") +
+          `<span class="bd-chip final">${esc(EVERYWHERE)}</span>`
+        badgeEls.chips = [...document.querySelectorAll(".bd-chip")]
+      }
+
+      function renderBadges(t) {
+        const k = momentAt(t)
+        const since = t - MOMENTS[k]
+        if (BADGES === "headline") {
+          // The name in the slot rolls up to the next app at each cut, like a slot machine.
+          badgeEls.items.forEach((el, i) => {
+            let y = 110
+            let blur = 0
+            if (i === k) {
+              const p = k === 0 ? 1 : easeOut(since / ROLL)
+              y = 100 * (1 - p)
+              blur = 6 * (1 - p)
+            } else if (i === k - 1 && since < ROLL) {
+              const p = easeOut(since / ROLL)
+              y = -100 * p
+              blur = 6 * p
+            }
+            el.style.transform = `translateY(${y.toFixed(1)}%)`
+            el.style.filter = blur > 0.05 ? `blur(${blur.toFixed(1)}px)` : "none"
+          })
+        } else if (BADGES === "dock") {
+          badgeEls.icons.forEach((el, i) => {
+            const on = k === 4 ? 1 : i === k ? easeOut(since / 0.35) : i === k - 1 ? 1 - easeOut(since / 0.25) : 0
+            const wave = k === 4 ? Math.max(0, Math.sin(clamp01((since - i * 0.08) / 0.5) * Math.PI)) : 0
+            const lift = k === 4 ? 0.12 + 0.18 * wave : 0.22 * on
+            el.style.transform = `translateY(${(-16 * lift / 0.22).toFixed(1)}px) scale(${(1 + 0.7 * lift).toFixed(3)})`
+            el.style.setProperty("--dot", (k === 4 ? 1 : on).toFixed(2))
+          })
+          // One caption for the whole film: the icons say which app, the caption says the promise.
+          if (!badgeEls.caption.dataset.set) {
+            badgeEls.caption.innerHTML = `<b style="margin:0">${esc(EVERYWHERE_LINE)}</b>`
+            badgeEls.caption.dataset.set = "1"
+          }
+        } else if (BADGES === "chips") {
+          // One chip per app, popping in as the app appears; the last one says "everywhere".
+          badgeEls.chips.forEach((el, i) => {
+            const at = MOMENTS[i]
+            const p = clamp01((t - at) / 0.4)
+            const pop = p <= 0 ? 0 : 1 + 0.12 * Math.sin(p * Math.PI) * (1 - p)
+            el.style.display = t >= at ? "flex" : "none"
+            el.style.opacity = easeOut(p).toFixed(3)
+            el.style.transform = `scale(${(0.7 + 0.3 * easeOut(p)) * pop})`
+            el.classList.toggle("on", i === k && i < 4)
+          })
+        }
+      }
+
+      const cams = SHOTS.map((s) => document.getElementById(s.id + "-cam"))
+
+      async function build() {
+        await document.fonts.ready
+        await Promise.all(['15px "SF Pro"', '19px "Times New Roman"', "15px Roboto", "14px Roboto"].map((f) => document.fonts.load(f, "Сәлем")))
+        const carets = measureCarets()
+        last.fields = []
+        // The look goes on after measuring: its tilts and scales would skew the caret positions.
+        document.getElementById("root").classList.add("look-" + LOOK, "ground-" + GROUND)
+        if (LOOK === "macbook") buildKeyboard()
+        buildBadges()
+        const render = (t) => {
+          renderAt(t)
+          SHOTS.forEach((_, i) => placeCamera(i, t, carets))
+          if (LOOK === "macbook") renderKeyboard(t)
+          renderBadges(t)
+        }
+        const tl = gsap.timeline({ paused: true })
+        const clock = { t: 0 }
+        tl.fromTo(clock, { t: 0 }, { t: 15, duration: 15, ease: "none", onUpdate: () => render(clock.t) }, 0)
+        render(0)
+        window.__timelines = window.__timelines || {}
+        window.__timelines["main"] = tl
+      }
+      build()
+    </script>
+  </body>
+</html>

@@ -21,6 +21,7 @@
     --color-chart-3: var(--chart-3);
     --color-chart-2: var(--chart-2);
     --color-chart-1: var(--chart-1);
+    --color-kaz: var(--kaz);
     --color-ring: var(--ring);
     --color-input: var(--input);
     --color-border: var(--border);
@@ -73,6 +74,7 @@
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
     --radius: 0.625rem;
+    --kaz: oklch(0.58 0.14 235);
     --sidebar: oklch(0.985 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
     --sidebar-primary: oklch(0.205 0 0);
@@ -99,6 +101,7 @@
     --accent: oklch(0.269 0 0);
     --accent-foreground: oklch(0.985 0 0);
     --destructive: oklch(0.704 0.191 22.216);
+    --kaz: oklch(0.76 0.12 225);
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
     --ring: oklch(0.556 0 0);
@@ -130,4 +133,40 @@
   html {
     @apply font-sans;
     }
+}
+/* A Russian letter flipping into its Kazakh one (components/flip-word.tsx). */
+.kz-flip-out {
+  animation: kz-flip-out 0.3s ease-in forwards;
+  transform-origin: 50% 60%;
+}
+.kz-flip-in {
+  animation: kz-flip-in 0.3s 0.3s ease-out both;
+  transform-origin: 50% 60%;
+}
+@keyframes kz-flip-out {
+  to {
+    transform: rotateX(90deg);
+    opacity: 0;
+  }
+}
+@keyframes kz-flip-in {
+  from {
+    transform: rotateX(-90deg) scale(1.4);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  to {
+    transform: rotateX(0) scale(1);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kz-flip-out {
+    display: none;
+  }
+  .kz-flip-in {
+    animation: none;
+  }
 }

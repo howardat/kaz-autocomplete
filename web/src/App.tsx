@@ -1,8 +1,10 @@
-import { useDeferredValue, useEffect, useMemo, useState } from "react"
-import { ArrowRight, Check, Copy, Cpu, Download, Gauge, Heart, Keyboard, Laptop, Loader2, Monitor, Moon, Share2, ShieldCheck, Sun } from "lucide-react"
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
+import { ArrowRight, Check, Copy, Download, Heart, Keyboard, Loader2, Moon, Share2, Sun } from "lucide-react"
 
-import { GitHubIcon, InstagramIcon, LinkedInIcon } from "@/components/brand-icons"
-import { TypePad } from "@/components/type-pad"
+import { AppleIcon, GitHubIcon, InstagramIcon, LinkedInIcon, WindowsIcon } from "@/components/brand-icons"
+import { Problems } from "@/components/problems"
+import { Showcase } from "@/components/showcase"
+import { TypePad, type TypePadHandle } from "@/components/type-pad"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,13 +16,6 @@ import { LANGS, useI18n } from "@/lib/i18n"
 import { AUTHOR, KASPI_PHONE, LICENSE_URL, RELEASES_URL, REPO_URL, SOCIALS } from "@/lib/links"
 import { useReleases } from "@/lib/releases"
 import { cn } from "@/lib/utils"
-
-const LETTERS: [string, string[]][] = [
-  ["к", ["к", "қ"]], ["г", ["г", "ғ"]], ["н", ["н", "ң"]], ["о", ["о", "ө"]],
-  ["у", ["у", "ұ", "ү"]], ["а", ["а", "ә"]], ["и", ["и", "і"]], ["х", ["х", "һ"]],
-]
-
-const STAT_ICONS = [Gauge, Check, Cpu, ShieldCheck]
 
 function useTheme() {
   const [dark, setDark] = useState(() => {
@@ -174,6 +169,7 @@ export default function App() {
   const [dark, toggleTheme] = useTheme()
   const [engine, setEngine] = useState<Engine | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const pad = useRef<TypePadHandle>(null)
 
   useEffect(() => {
     loadEngine().then(setEngine, (e: Error) => setError(e.message))
@@ -192,7 +188,7 @@ export default function App() {
           </a>
           <nav className="flex items-center gap-1">
             <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex"><a href="#demo">{t.nav.demo}</a></Button>
-            <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex"><a href="#how">{t.nav.how}</a></Button>
+            <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex"><a href="#why">{t.nav.why}</a></Button>
             <Button variant="ghost" size="sm" asChild><a href="#download">{t.nav.download}</a></Button>
             <ShareButton />
             <Button variant="ghost" size="icon" asChild className="hidden sm:inline-flex">
@@ -209,8 +205,12 @@ export default function App() {
       <main className="relative z-10">
         <section className="mx-auto flex max-w-4xl flex-col items-center px-4 pt-20 pb-12 text-center sm:pt-28">
           <div className="mb-6 flex flex-wrap justify-center gap-2">
-            <Badge variant="outline" className="gap-1.5 rounded-full bg-background/60 px-3 py-1 backdrop-blur">
-              <span className="size-1.5 rounded-full bg-emerald-500" /> {t.badge}
+            <Badge variant="outline" className="gap-2 rounded-full bg-background/60 px-3 py-1 backdrop-blur" asChild>
+              <a href="#download">
+                <span className="flex items-center gap-1"><AppleIcon className="size-3.5" /> macOS</span>
+                <span className="text-muted-foreground">·</span>
+                <span className="flex items-center gap-1"><WindowsIcon className="size-3" /> Windows</span>
+              </a>
             </Badge>
             <Badge variant="outline" className="rounded-full bg-background/60 px-3 py-1 backdrop-blur" asChild>
               <a href={REPO_URL} target="_blank" rel="noreferrer"><GitHubIcon /> {t.openSource}</a>
@@ -232,7 +232,15 @@ export default function App() {
           )}
         </section>
 
+        <section className="mx-auto max-w-5xl px-4 pb-24">
+          <Showcase />
+        </section>
+
         <section id="demo" className="mx-auto max-w-4xl scroll-mt-20 px-4 pb-24">
+          <div className="mx-auto mb-8 max-w-2xl text-center">
+            <h2 className="text-3xl font-semibold tracking-tight">{t.tryTitle}</h2>
+            <p className="mt-3 text-muted-foreground">{t.tryText}</p>
+          </div>
           <Card className="overflow-visible border-border/60 bg-card/70 shadow-2xl shadow-black/5 backdrop-blur-xl">
             <CardContent>
               {error ? (
@@ -247,7 +255,7 @@ export default function App() {
                     <TabsTrigger value="type"><Keyboard /> {t.tabType}</TabsTrigger>
                     <TabsTrigger value="convert"><Copy /> {t.tabConvert}</TabsTrigger>
                   </TabsList>
-                  <TabsContent value="type"><TypePad engine={engine} /></TabsContent>
+                  <TabsContent value="type"><TypePad engine={engine} ref={pad} /></TabsContent>
                   <TabsContent value="convert"><ConvertPad engine={engine} /></TabsContent>
                 </Tabs>
               )}
@@ -255,41 +263,7 @@ export default function App() {
           </Card>
         </section>
 
-        <section id="how" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-24">
-          <div className="mx-auto mb-10 max-w-2xl text-center">
-            <h2 className="text-3xl font-semibold tracking-tight">{t.howTitle}</h2>
-            <p className="mt-3 text-muted-foreground">
-              {t.howText}
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {LETTERS.map(([from, to]) => (
-              <div key={from} className="group flex items-center justify-between rounded-xl border bg-card/60 p-4 backdrop-blur transition-colors hover:bg-accent/50">
-                <span className="grid size-10 place-items-center rounded-lg border bg-background font-mono text-lg">{from}</span>
-                <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-                <span className="flex gap-1.5 text-xl font-medium">
-                  {to.map((t, i) => <span key={t} className={i === 0 ? "text-muted-foreground" : ""}>{t}</span>)}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {t.stats.map(({ value, label, detail }, i) => {
-              const Icon = STAT_ICONS[i]
-              return (
-              <Card key={label} className="gap-2 bg-card/60 backdrop-blur">
-                <CardHeader>
-                  <Icon className="mb-2 size-4 text-muted-foreground" />
-                  <CardTitle className="text-3xl font-semibold tracking-tight tabular-nums">{value}</CardTitle>
-                  <CardDescription className="font-medium text-foreground">{label}</CardDescription>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">{detail}</CardContent>
-              </Card>
-              )
-            })}
-          </div>
-        </section>
+        <Problems engine={engine} onTry={(text) => pad.current?.type(text)} />
 
         <section id="download" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-24">
           <div className="mx-auto mb-10 max-w-2xl text-center">
@@ -302,7 +276,7 @@ export default function App() {
             <Card className="bg-card/60 backdrop-blur">
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <Monitor className="size-5" />
+                  <WindowsIcon className="size-5" />
                   <CardTitle className="text-xl">{t.winTitle}</CardTitle>
                 </div>
                 <CardDescription>{t.winDesc}</CardDescription>
@@ -320,7 +294,7 @@ export default function App() {
             <Card className="bg-card/60 backdrop-blur">
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <Laptop className="size-5" />
+                  <AppleIcon className="size-5" />
                   <CardTitle className="text-xl">macOS 13+</CardTitle>
                 </div>
                 <CardDescription>{t.macDesc}</CardDescription>

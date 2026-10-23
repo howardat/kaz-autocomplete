@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 
+import { FlipWord } from "@/components/flip-word"
+
 export const LANGS = [
   { code: "kk", label: "Қаз" },
   { code: "ru", label: "Рус" },
@@ -10,49 +12,37 @@ export type Lang = (typeof LANGS)[number]["code"]
 
 const DEFAULT_LANG: Lang = "kk"
 
-const b = (s: string) => <span className="font-medium text-foreground">{s}</span>
 const mono = (s: string) => <span className="font-mono">{s}</span>
 
 const en = {
-  metaDescription: "Type Kazakh on a Russian keyboard. An on-device neural input method for macOS and Windows.",
+  metaDescription: "Type Kazakh on a regular Russian keyboard. KazType puts in ә, ғ, қ, ң, ө, ұ, ү, һ, і as you type. For Windows and macOS.",
   language: "Language",
-  nav: { demo: "Demo", how: "How it works", download: "Download", theme: "Toggle theme" },
-  badge: "On-device neural input method · macOS & Windows",
-  heroLead: "Type Kazakh on a ",
-  heroAccent: "Russian keyboard.",
+  nav: { demo: "Demo", why: "Benefits", download: "Download", theme: "Toggle theme" },
+  heroLead: "Type the way you're used to. ",
+  heroAccent: <>Get proper <FlipWord typed="казакша" fixed="қазақша" holdMs={4500} />.</>,
   heroText: (
     <>
-      Type {b("казакстан")}, get {b("қазақстан")}. A tiny neural network restores ә ғ қ ң ө ұ ү һ і as you type, right on
-      your machine.
+      Type <FlipWord typed="жексенби куни" fixed="жексенбі күні" startMs={1600} className="font-medium" /> on a regular Russian keyboard and the Kazakh letters go in by themselves, right as you type.
     </>
   ),
   tryNow: "Try it now",
   download: "Download",
   loadError: "Could not load the model:",
   loading: "Loading the model (2.6 MB)…",
-  tabType: "Type live",
-  tabConvert: "Convert text",
-  howTitle: "Eight keys, nine missing letters",
-  howText:
-    "A Russian layout has no key for nine Kazakh letters. KazType reads each typed letter in context and picks the Kazakh one you meant.",
-  stats: [
-    { value: "99.0%", label: "top-1 accuracy", detail: "on held-out words with ambiguous letters" },
-    { value: "99.9%", label: "in the top 3", detail: "the right word is almost always one key away" },
-    { value: "<10 ms", label: "per word", detail: "a 2-layer BiLSTM, int8, on your CPU" },
-    { value: "2.6 MB", label: "model", detail: "nothing leaves your machine" },
-  ],
+  tabType: "Type",
+  tabConvert: "Fix existing text",
   getTitle: "Get KazType",
   getText: (
     <>
-      Works in every app: browsers, Word, Telegram, terminals. Pick a candidate with {mono("1–9")}; your choices are
-      remembered.
+      Works wherever you type: browsers, Word, Telegram, WhatsApp. Pick a word option with {mono("1–9")} and KazType
+      remembers your choice.
     </>
   ),
   winTitle: "Windows 10 & 11",
-  winDesc: "A Text Services Framework input method. x64, x86 and ARM64.",
+  winDesc: "For any Windows PC: x64, x86 and ARM64.",
   winStep1: "Run the installer. It is not code-signed yet, so if SmartScreen warns, choose More info > Run anyway.",
   winStep2: <>Press {mono("Win + Space")} and choose “Kazakh – KazType”.</>,
-  macDesc: "An Input Method Kit app with a Core ML model. Apple silicon and Intel.",
+  macDesc: "For Macs with Apple silicon and Intel.",
   macStep1: "Open the installer. It is not notarized yet, so if macOS blocks it, go to System Settings > Privacy & Security and click Open Anyway.",
   macStep2: "Choose “Қазақша (KazType)” in the input menu. If it is missing, log out and back in.",
   downloadFile: (ext: string) => `Download ${ext}`,
@@ -62,7 +52,7 @@ const en = {
   openSource: "Open source",
   share: "Share",
   linkCopied: "Link copied",
-  shareText: "Type Kazakh on a Russian keyboard with KazType",
+  shareText: "Type Kazakh on a Russian keyboard: KazType adds the Kazakh letters for you",
   madeBy: "Made by",
   authorRole: "AI/ML engineer, former designer",
   donate: "Support the project",
@@ -70,8 +60,8 @@ const en = {
   numberCopied: "Number copied",
   license: "MIT license. Contributions are welcome.",
   footer: "The demo runs entirely in your browser. Nothing you type is sent anywhere.",
-  convertFrom: "Russian keyboard text",
-  convertTo: "Kazakh",
+  convertFrom: "Text without Kazakh letters",
+  convertTo: "Fixed text",
   convertPlaceholder: "Paste text typed without Kazakh letters…",
   copy: "Copy",
   copied: "Copied",
@@ -84,51 +74,66 @@ const en = {
   onDevice: "ms · on-device",
   clear: "Clear",
   try: "Try:",
+  videoLabel: "KazType typing one Kazakh sentence in WhatsApp, Gmail, Word and Chrome",
+  padCta: "Click and try it out right here",
+  tryTitle: "Try it yourself",
+  tryText: "Right here in the browser, nothing to install.",
+  keyboardHint: "Kazakh letters hide in these eight keys. Press к and you get қ when the word needs it.",
+  benefitsTitle: "Kazakh letters without hunting or switching",
+  benefitsText: "KazType fixes the three things that make typing Kazakh slow.",
+  benefits: [
+    {
+      pain: "The letters aren't on the keys",
+      title: "No hunting for letters",
+      text: "Ә, Ғ, Қ, Ң, Ө, Ұ, Ү, Һ, І aren't printed on the keyboard, and with KazType they don't need to be. Press к, and you get қ wherever the word needs it.",
+    },
+    {
+      pain: "A different layout to learn",
+      title: "Nothing new to learn",
+      text: "You stay on the Russian layout. Digits, punctuation and muscle memory stay where they are, and there is no layout to switch to.",
+    },
+    {
+      pain: "Text typed without Kazakh letters",
+      title: "Correct text right away",
+      text: "жексенби куни comes out as жексенбі күні. When a word can be read two ways, like қол and көл, you pick the right one with a single digit.",
+    },
+  ],
+  trickyTitle: "Try words people usually get wrong",
+  trickyHint: "Click one and it is typed in the demo above",
   noKeyboard: "No Russian keyboard? Type anyway. Keys are read by position on the ЙЦУКЕН layout, as KazType does.",
 }
 
 export type Dict = typeof en
 
 const kk: Dict = {
-  metaDescription: "Орыс пернетақтасында қазақша жазыңыз. macOS және Windows үшін құрылғыда жұмыс істейтін нейрондық енгізу әдісі.",
+  metaDescription: "Кәдімгі орыс пернетақтасында қазақша теріңіз. KazType ә, ғ, қ, ң, ө, ұ, ү, һ, і әріптерін теру кезінде өзі қояды. Windows және macOS үшін.",
   language: "Тіл",
-  nav: { demo: "Демо", how: "Қалай жұмыс істейді", download: "Жүктеу", theme: "Тақырыпты ауыстыру" },
-  badge: "Құрылғыда жұмыс істейтін нейрондық енгізу әдісі · macOS және Windows",
-  heroLead: "Орыс пернетақтасында ",
-  heroAccent: "қазақша жазыңыз.",
+  nav: { demo: "Демо", why: "Артықшылықтары", download: "Жүктеу", theme: "Тақырыпты ауыстыру" },
+  heroLead: "Әдеттегідей теріңіз. ",
+  heroAccent: <><FlipWord typed="Казакшаныз" fixed="Қазақшаңыз" holdMs={4500} /> дұрыс шығады.</>,
   heroText: (
     <>
-      {b("казакстан")} деп теріңіз, {b("қазақстан")} шығады. Шағын нейрондық желі ә ғ қ ң ө ұ ү һ і әріптерін теру
-      барысында, тікелей компьютеріңізде қалпына келтіреді.
+      Кәдімгі орыс пернетақтасында <FlipWord typed="жексенби куни" fixed="жексенбі күні" startMs={1600} className="font-medium" /> деп теріңіз, қазақ әріптері теру барысында өзі қойылады.
     </>
   ),
   tryNow: "Қазір байқап көріңіз",
   download: "Жүктеу",
   loadError: "Модельді жүктеу мүмкін болмады:",
   loading: "Модель жүктелуде (2,6 МБ)…",
-  tabType: "Тікелей теру",
-  tabConvert: "Мәтінді түрлендіру",
-  howTitle: "Сегіз перне, тоғыз жетіспейтін әріп",
-  howText:
-    "Орыс пернетақтасында тоғыз қазақ әрпіне перне жоқ. KazType әр терілген әріпті контекске қарай оқып, сіз ойлаған қазақ әрпін таңдайды.",
-  stats: [
-    { value: "99,0%", label: "top-1 дәлдік", detail: "екіұшты әріптері бар тестілік сөздерде" },
-    { value: "99,9%", label: "алғашқы 3 нұсқада", detail: "дұрыс сөз әрдайым дерлік бір перне басу қашықтығында" },
-    { value: "<10 мс", label: "бір сөзге", detail: "2 қабатты BiLSTM, int8, сіздің процессорыңызда" },
-    { value: "2,6 МБ", label: "модель", detail: "ешбір дерек құрылғыдан шықпайды" },
-  ],
+  tabType: "Теру",
+  tabConvert: "Дайын мәтінді түзету",
   getTitle: "KazType орнату",
   getText: (
     <>
-      Барлық қолданбада жұмыс істейді: браузерлер, Word, Telegram, терминалдар. Нұсқаны {mono("1–9")} пернелерімен
-      таңдаңыз; таңдауларыңыз есте сақталады.
+      Теруге болатын барлық жерде жұмыс істейді: браузер, Word, Telegram, WhatsApp. Сөздің керек нұсқасын{" "}
+      {mono("1–9")} сандарымен таңдайсыз, KazType таңдауыңызды есте сақтайды.
     </>
   ),
   winTitle: "Windows 10 және 11",
-  winDesc: "Text Services Framework негізіндегі енгізу әдісі. x64, x86 және ARM64.",
+  winDesc: "Кез келген Windows компьютеріне: x64, x86 және ARM64.",
   winStep1: "Орнатқышты іске қосыңыз. Ол әлі қол қойылмаған, сондықтан SmartScreen ескертсе, «Подробнее» > «Выполнить в любом случае» таңдаңыз.",
   winStep2: <>{mono("Win + Space")} басып, «Kazakh – KazType» таңдаңыз.</>,
-  macDesc: "Core ML моделі бар Input Method Kit қолданбасы. Apple silicon және Intel.",
+  macDesc: "Apple silicon және Intel негізіндегі Mac үшін.",
   macStep1: "Орнатқышты ашыңыз. Ол әлі нотариаттан өтпеген, сондықтан macOS бөгесе, System Settings > Privacy & Security ашып, Open Anyway басыңыз.",
   macStep2: "Енгізу мәзірінен «Қазақша (KazType)» таңдаңыз. Ол көрінбесе, жүйеден шығып, қайта кіріңіз.",
   downloadFile: (ext: string) => `${ext} жүктеу`,
@@ -138,7 +143,7 @@ const kk: Dict = {
   openSource: "Ашық бастапқы код",
   share: "Бөлісу",
   linkCopied: "Сілтеме көшірілді",
-  shareText: "KazType арқылы орыс пернетақтасында қазақша жазыңыз",
+  shareText: "Орыс пернетақтасында қазақша теріңіз: KazType қазақ әріптерін өзі қояды",
   madeBy: "Авторы",
   authorRole: "AI/ML инженері, бұрынғы дизайнер",
   donate: "Жобаны қолдау",
@@ -146,8 +151,8 @@ const kk: Dict = {
   numberCopied: "Нөмір көшірілді",
   license: "MIT лицензиясы. Үлес қосуға қуаныштымыз.",
   footer: "Демо толығымен браузеріңізде жұмыс істейді. Терген мәтініңіз ешқайда жіберілмейді.",
-  convertFrom: "Орыс пернетақтасымен терілген мәтін",
-  convertTo: "Қазақша",
+  convertFrom: "Қазақ әріптерінсіз мәтін",
+  convertTo: "Түзетілген мәтін",
   convertPlaceholder: "Қазақ әріптерінсіз терілген мәтінді қойыңыз…",
   copy: "Көшіру",
   copied: "Көшірілді",
@@ -160,50 +165,65 @@ const kk: Dict = {
   onDevice: "мс · құрылғыда",
   clear: "Тазалау",
   try: "Байқап көріңіз:",
+  videoLabel: "KazType бір қазақша сөйлемді WhatsApp, Gmail, Word және Chrome-да тереді",
+  padCta: "Басып, дәл осында байқап көріңіз",
+  tryTitle: "Өзіңіз байқап көріңіз",
+  tryText: "Дәл осында, браузерде, орнатусыз.",
+  keyboardHint: "Қазақ әріптері осы сегіз пернеде жасырынған. к басасыз, сөзге керек болса қ шығады.",
+  benefitsTitle: "Қазақ әріптері іздеусіз және ауыстырусыз",
+  benefitsText: "KazType қазақша теруді баяулататын үш мәселені шешеді.",
+  benefits: [
+    {
+      pain: "Пернелерде әріп жоқ",
+      title: "Әріп іздеудің қажеті жоқ",
+      text: "Ә, Ғ, Қ, Ң, Ө, Ұ, Ү, Һ, І пернетақтада салынбаған, бірақ KazType-пен оларды іздемейсіз. к басасыз, сөзге керек жерде қ шығады.",
+    },
+    {
+      pain: "Басқа орналасуға үйрену керек",
+      title: "Қайта үйренудің қажеті жоқ",
+      text: "Орыс орналасуында қаласыз. Сандар, тыныс белгілері және саусақтарыңыздың әдеті өз орнында, орналасуды ауыстырудың керегі жоқ.",
+    },
+    {
+      pain: "Мәтін қазақ әріптерінсіз жазылады",
+      title: "Мәтін бірден сауатты",
+      text: "«жексенби куни» орнына «жексенбі күні» шығады. Сөзді екі түрлі оқуға болса, мысалы қол мен көл, керегін бір санмен таңдайсыз.",
+    },
+  ],
+  trickyTitle: "Жиі қате жазылатын сөздерді байқап көріңіз",
+  trickyHint: "Басыңыз, сөз жоғарыдағы демоға теріледі",
   noKeyboard:
     "Орыс пернетақтасы жоқ па? Бәрібір тере беріңіз. KazType сияқты, пернелер ЙЦУКЕН орналасуындағы орнына қарай оқылады.",
 }
 
 const ru: Dict = {
-  metaDescription: "Пишите по-казахски на русской клавиатуре. Нейросетевой метод ввода для macOS и Windows, работающий на устройстве.",
+  metaDescription: "Печатайте по-казахски на обычной русской клавиатуре. KazType сам ставит ә, ғ, қ, ң, ө, ұ, ү, һ, і во время набора. Для Windows и macOS.",
   language: "Язык",
-  nav: { demo: "Демо", how: "Как это работает", download: "Скачать", theme: "Сменить тему" },
-  badge: "Нейросетевой метод ввода на устройстве · macOS и Windows",
-  heroLead: "Пишите по-казахски ",
-  heroAccent: "на русской клавиатуре.",
+  nav: { demo: "Демо", why: "Преимущества", download: "Скачать", theme: "Сменить тему" },
+  heroLead: "Печатайте как привыкли. ",
+  heroAccent: <>Получайте <FlipWord typed="казакша" fixed="қазақша" holdMs={4500} />.</>,
   heroText: (
     <>
-      Наберите {b("казакстан")} и получите {b("қазақстан")}. Небольшая нейросеть восстанавливает ә ғ қ ң ө ұ ү һ і прямо
-      во время набора, на вашем компьютере.
+      Наберите <FlipWord typed="жексенби куни" fixed="жексенбі күні" startMs={1600} className="font-medium" /> на обычной русской раскладке, и казахские буквы встанут сами, прямо во время набора.
     </>
   ),
   tryNow: "Попробовать",
   download: "Скачать",
   loadError: "Не удалось загрузить модель:",
   loading: "Загрузка модели (2,6 МБ)…",
-  tabType: "Набор вживую",
-  tabConvert: "Конвертировать текст",
-  howTitle: "Восемь клавиш, девять недостающих букв",
-  howText:
-    "В русской раскладке нет клавиш для девяти казахских букв. KazType смотрит на каждую набранную букву в контексте и выбирает казахскую, которую вы имели в виду.",
-  stats: [
-    { value: "99,0%", label: "точность top-1", detail: "на тестовых словах с неоднозначными буквами" },
-    { value: "99,9%", label: "в первой тройке", detail: "нужное слово почти всегда в одном нажатии" },
-    { value: "<10 мс", label: "на слово", detail: "двухслойная BiLSTM, int8, на вашем процессоре" },
-    { value: "2,6 МБ", label: "модель", detail: "данные не покидают ваш компьютер" },
-  ],
+  tabType: "Печатать",
+  tabConvert: "Исправить готовый текст",
   getTitle: "Установить KazType",
   getText: (
     <>
-      Работает во всех приложениях: браузерах, Word, Telegram, терминалах. Выбирайте вариант клавишами {mono("1–9")};
-      ваш выбор запоминается.
+      Работает везде, где можно печатать: в браузере, Word, Telegram, WhatsApp. Нужный вариант слова выбирается цифрой{" "}
+      {mono("1–9")}, и KazType запоминает ваш выбор.
     </>
   ),
   winTitle: "Windows 10 и 11",
-  winDesc: "Метод ввода на основе Text Services Framework. x64, x86 и ARM64.",
+  winDesc: "Для любого компьютера с Windows: x64, x86 и ARM64.",
   winStep1: "Запустите установщик. Он пока не подписан, поэтому если SmartScreen предупредит, выберите «Подробнее» > «Выполнить в любом случае».",
   winStep2: <>Нажмите {mono("Win + Space")} и выберите «Kazakh – KazType».</>,
-  macDesc: "Приложение Input Method Kit с моделью Core ML. Apple silicon и Intel.",
+  macDesc: "Для Mac на Apple silicon и Intel.",
   macStep1: "Откройте установщик. Он пока не нотаризован, поэтому если macOS его заблокирует, откройте System Settings > Privacy & Security и нажмите Open Anyway.",
   macStep2: "Выберите «Қазақша (KazType)» в меню ввода. Если его нет, выйдите из системы и войдите снова.",
   downloadFile: (ext: string) => `Скачать ${ext}`,
@@ -213,7 +233,7 @@ const ru: Dict = {
   openSource: "Открытый исходный код",
   share: "Поделиться",
   linkCopied: "Ссылка скопирована",
-  shareText: "Пишите по-казахски на русской клавиатуре с KazType",
+  shareText: "Печатайте по-казахски на русской клавиатуре: KazType сам ставит казахские буквы",
   madeBy: "Автор",
   authorRole: "AI/ML-инженер, бывший дизайнер",
   donate: "Поддержать проект",
@@ -221,8 +241,8 @@ const ru: Dict = {
   numberCopied: "Номер скопирован",
   license: "Лицензия MIT. Будем рады вашему вкладу.",
   footer: "Демо работает целиком в браузере. Набранный текст никуда не отправляется.",
-  convertFrom: "Текст с русской клавиатуры",
-  convertTo: "По-казахски",
+  convertFrom: "Текст без казахских букв",
+  convertTo: "Исправленный текст",
   convertPlaceholder: "Вставьте текст, набранный без казахских букв…",
   copy: "Копировать",
   copied: "Скопировано",
@@ -235,6 +255,32 @@ const ru: Dict = {
   onDevice: "мс · на устройстве",
   clear: "Очистить",
   try: "Попробуйте:",
+  videoLabel: "KazType набирает одно казахское предложение в WhatsApp, Gmail, Word и Chrome",
+  padCta: "Нажмите и попробуйте прямо здесь",
+  tryTitle: "Попробуйте сами",
+  tryText: "Прямо здесь, в браузере, без установки.",
+  keyboardHint: "Казахские буквы спрятаны в этих восьми клавишах. Нажимаете к и получаете қ, когда слово этого требует.",
+  benefitsTitle: "Казахские буквы без поиска и переключений",
+  benefitsText: "KazType решает три проблемы, из-за которых печатать по-казахски долго.",
+  benefits: [
+    {
+      pain: "Букв нет на клавишах",
+      title: "Не нужно искать буквы",
+      text: "Ә, Ғ, Қ, Ң, Ө, Ұ, Ү, Һ, І не нарисованы на клавиатуре, и с KazType это не мешает. Нажимаете к, и там, где слово этого требует, появляется қ.",
+    },
+    {
+      pain: "Нужно привыкать к другой раскладке",
+      title: "Не нужно переучиваться",
+      text: "Вы остаётесь в русской раскладке. Цифры, знаки препинания и привычные движения пальцев на своих местах, переключать раскладку не нужно.",
+    },
+    {
+      pain: "Текст пишут без казахских букв",
+      title: "Текст сразу грамотный",
+      text: "Вместо «жексенби куни» получается «жексенбі күні». Если слово читается по-разному, как қол и көл, нужный вариант выбирается одной цифрой.",
+    },
+  ],
+  trickyTitle: "Попробуйте слова, в которых обычно ошибаются",
+  trickyHint: "Нажмите, и слово наберётся в демо выше",
   noKeyboard:
     "Нет русской раскладки? Всё равно печатайте. Клавиши считываются по их месту в раскладке ЙЦУКЕН, как в KazType.",
 }

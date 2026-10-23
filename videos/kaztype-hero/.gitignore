@@ -1,0 +1,6 @@
+# Renders, checks, snapshots and review boards are rebuilt from the sources.
+renders/
+.hyperframes/
+boards/
+node_modules/
+.thumbnails/

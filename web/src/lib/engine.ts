@@ -44,7 +44,8 @@ export function convertText(engine: Engine, text: string): string {
   let last = 0
   for (const m of text.matchAll(CYRILLIC_WORD)) {
     out += text.slice(last, m.index)
-    out += engine.convert(m[0], out.slice(-64), 1).candidates[0]
+    // Limit 2: with 1, the core gives the only slot to the raw word, to keep it reachable.
+    out += engine.convert(m[0], out.slice(-64), 2).candidates[0]
     last = m.index + m[0].length
   }
   return out + text.slice(last)
