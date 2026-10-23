@@ -3,17 +3,15 @@ name: windows
 on:
   push:
     branches: ['**']
-    tags: ['v*']  # a v* tag also publishes the installer as a GitHub Release
     paths: ['windows/**', '.github/workflows/windows.yml']
   pull_request:
     paths: ['windows/**', '.github/workflows/windows.yml']
   workflow_dispatch:
+  workflow_call:  # from release.yml
 
 jobs:
   build:
     runs-on: windows-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
       - name: Install Inno Setup
@@ -30,9 +28,3 @@ jobs:
           name: KazType-Setup
           path: windows/dist/KazType-Setup-*.exe
           if-no-files-found: error
-      - name: Publish release
-        if: startsWith(github.ref, 'refs/tags/v')
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release create $env:GITHUB_REF_NAME (Get-ChildItem windows/dist/KazType-Setup-*.exe).FullName --generate-notes

@@ -1,0 +1,10 @@
+#!/bin/sh
+# Register and enable KazType for the logged-in user, like make install.
+APP="/Library/Input Methods/KazType.app"
+user=$(stat -f %Su /dev/console)
+if [ -z "$user" ] || [ "$user" = root ] || [ "$user" = loginwindow ]; then exit 0; fi
+home=$(dscl . -read "/Users/$user" NFSHomeDirectory | awk '{print $2}')
+# A copy from make install would shadow this one.
+rm -rf "$home/Library/Input Methods/KazType.app"
+launchctl asuser "$(id -u "$user")" sudo -u "$user" "$APP/Contents/MacOS/KazType" --register
+exit 0

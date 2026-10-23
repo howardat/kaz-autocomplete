@@ -1,0 +1,28 @@
+name: macos
+
+on:
+  push:
+    branches: ['**']
+    paths: ['macos/**', '.github/workflows/macos.yml']
+  pull_request:
+    paths: ['macos/**', '.github/workflows/macos.yml']
+  workflow_dispatch:
+  workflow_call:  # from release.yml
+
+jobs:
+  build:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: macos
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test
+        run: make test
+      - name: Build installer
+        run: make pkg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KazType-macOS
+          path: macos/build/KazType-*.pkg
+          if-no-files-found: error

@@ -1,0 +1,4 @@
+#!/bin/sh
+# Stop the running copy so the new one starts on next use.
+pkill -x KazType
+exit 0

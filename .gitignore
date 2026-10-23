@@ -10,7 +10,7 @@ wheels/
 .venv
 
 # Model data and artifacts
-data/
+/data/
 macos/.build/
 macos/build/
 windows/build/

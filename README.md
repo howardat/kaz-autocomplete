@@ -16,6 +16,20 @@ and get `қазақстан`. A small on-device neural network restores the Kaza
 
 The mapping lives in `transliteration_rules.yaml`.
 
+## Install
+
+Download from [Releases](https://github.com/howardat/kaz-autocomplete/releases/latest):
+
+- **macOS 13+:** `KazType-<version>.pkg`. It is not notarized, so macOS blocks it the first
+  time: open System Settings > Privacy & Security and click **Open Anyway**. After installing,
+  log out and back in if KazType is missing from the input menu. To remove it, run
+  `sudo rm -rf "/Library/Input Methods/KazType.app"`.
+- **Windows 10/11:** `KazType-Setup-<version>.exe`. See [Windows](#windows).
+
+Run a newer installer over the old one to update.
+
+A `v*` tag builds both installers in CI and publishes them as a Release.
+
 ## Using it
 
 1. Switch to **Қазақша (KazType)** in the input menu.
@@ -58,6 +72,7 @@ Needs only Xcode Command Line Tools.
 cd macos
 make test       # unit tests (real-model tests run after ml.export)
 make install    # build, ad-hoc sign, copy to ~/Library/Input Methods, register + enable
+make pkg        # universal installer for /Library/Input Methods -> build/KazType-<version>.pkg
 make uninstall
 ```
 
@@ -70,8 +85,7 @@ substitute layout. Same keys as macOS. The model runs in plain C++ with int8
 weights and activations (no runtime dependencies); its accuracy matches the float
 model. The user dictionary is `%APPDATA%\KazType\user_dict.tsv`.
 
-To install, run `KazType-Setup-<version>.exe` (from the `KazType-Setup` artifact of the
-`windows` workflow). It asks for administrator rights, and its uninstaller is in
+To install, run `KazType-Setup-<version>.exe`. It asks for administrator rights, and its uninstaller is in
 Settings > Apps. It is not code-signed, so SmartScreen warns: choose More info > Run anyway.
 
 To build, you need Visual Studio 2022 (Desktop C++) and CMake. The installer also needs
