@@ -2,10 +2,15 @@
 
 #include <algorithm>
 #include <cmath>
+#include <map>
 
 #include "Text.h"
 
 namespace kaz {
+
+// Words the model cannot produce because the typed letter has no rule (я is never ә).
+// They take the model's place, so a user dictionary entry still overrides them.
+static const std::map<std::u32string, std::u32string> fixed = {{U"ия", U"иә"}};
 
 Converter::Converter(Vocab vocab, std::unique_ptr<TagModel> model, std::unique_ptr<UserDict> userDict)
     : vocab_(std::move(vocab)), model_(std::move(model)), userDict_(std::move(userDict)) {}
@@ -35,6 +40,10 @@ Converter::Result Converter::convert(const std::u32string& typed, const std::u32
         for (auto& s : beam(word.substr(offset), probs, limit)) ranked.push_back(word.substr(0, offset) + s);
     } else {
         ranked = {word};
+    }
+    if (auto f = fixed.find(word); f != fixed.end()) {
+        ranked.erase(std::remove(ranked.begin(), ranked.end(), f->second), ranked.end());
+        ranked.insert(ranked.begin(), f->second);
     }
     std::u32string modelTop = ranked[0];
 

@@ -74,6 +74,12 @@ static void fakeTests() {
     c.learn(u("кан"), u("қан"), u("қан"));
     CHECK(!c.userDict().lookup(u("кан")));
 
+    // Fixed words beat the model, keep case, and a user choice still wins.
+    auto ia = c.convert(u("Ия"));
+    CHECK(ia.candidates.front() == u("Иә") && ia.modelTop == u("Иә") && contains(ia.candidates, u("Ия")));
+    c.learn(u("ия"), u("ия"), ia.modelTop);
+    CHECK(c.convert(u("ия")).candidates.front() == u("ия"));
+
     // User dictionary round trip.
     fs::path dir = fs::temp_directory_path() / ("kaztype-test-" + std::to_string(std::rand()));
     UserDict(dir / "d.tsv").set(u("кол"), u("қол"));

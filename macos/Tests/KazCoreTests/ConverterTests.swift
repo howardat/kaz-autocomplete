@@ -61,6 +61,16 @@ func fakeConverter() throws -> Converter {
     #expect(c.userDict.lookup("кан") == nil)
 }
 
+@Test func fixedWordBeatsModelButNotUser() throws {
+    let c = try fakeConverter()
+    let r = c.convert("Ия")
+    #expect(r.candidates.first == "Иә")
+    #expect(r.modelTop == "Иә")
+    #expect(r.candidates.contains("Ия"))
+    c.learn(typed: "ия", chosen: "ия", modelTop: r.modelTop)
+    #expect(c.convert("ия").candidates.first == "ия")
+}
+
 @Test func userDictRoundTrip() throws {
     let url = FileManager.default.temporaryDirectory
         .appendingPathComponent(UUID().uuidString).appendingPathComponent("d.json")

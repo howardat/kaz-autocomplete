@@ -9,6 +9,10 @@ public final class Converter {
         public let modelTop: String
     }
 
+    /// Words the model cannot produce because the typed letter has no rule (я is never ә).
+    /// They take the model's place, so a user dictionary entry still overrides them.
+    static let fixed: [String: String] = ["ия": "иә"]
+
     public let vocab: Vocab
     private let model: TagModel
     public let userDict: UserDict
@@ -51,6 +55,10 @@ public final class Converter {
             }
         } else {
             ranked = [String(word)]
+        }
+        if let f = Self.fixed[String(word)] {
+            ranked.removeAll { $0 == f }
+            ranked.insert(f, at: 0)
         }
         let modelTop = ranked[0]
 
